@@ -1,0 +1,9 @@
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\bin\Debug\ServerProject.exe.config
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\bin\Debug\ServerProject.exe
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\bin\Debug\ServerProject.pdb
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\obj\Debug\ServerProject.csprojAssemblyReference.cache
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\obj\Debug\ServerProject.exe
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\obj\Debug\ServerProject.pdb
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\bin\Debug\CommonLibrary.dll
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\bin\Debug\CommonLibrary.pdb
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ServerProject\ServerProject\obj\Debug\ServerProject.csproj.CopyComplete

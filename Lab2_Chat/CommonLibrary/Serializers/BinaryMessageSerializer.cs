@@ -6,9 +6,9 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CommonLibrary.Serializers
+namespace CommonLibrary
 {
-    class BinaryMessageSerializer : IMessageSerializer
+    public class BinaryMessageSerializer : IMessageSerializer
     {
         public Message Deserialize(byte[] data)
         {

@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerProject", "ServerProj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientProject", "..\ClientProject\ClientProject\ClientProject.csproj", "{1A5DE31B-55E2-4B23-AED0-E0BB9A29EF1B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLibrary", "CommonLibrary\CommonLibrary.csproj", "{2EC1635E-8D88-4174-8076-745A3F96618D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CommonLibrary", "..\CommonLibrary\CommonLibrary.csproj", "{2EC1635E-8D88-4174-8076-745A3F96618D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
