@@ -9,6 +9,7 @@ namespace ClientProject
 {
     public interface IClient
     {
+        void SearchServers();
         void HandleReceivedMessage(Message message);
         void ListenTcp();
         void ListenUdp();

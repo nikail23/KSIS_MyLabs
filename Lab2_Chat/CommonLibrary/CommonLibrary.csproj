@@ -41,11 +41,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Messages\ClientUdpBroadcastRequestMessage.cs" />
+    <Compile Include="Messages\ClientUdpRequestMessage.cs" />
     <Compile Include="Messages\CommonChatMessage.cs" />
     <Compile Include="Messages\IndividualChatMessage.cs" />
     <Compile Include="Messages\Message.cs" />
-    <Compile Include="Messages\ServerUdpRequestMessage.cs" />
+    <Compile Include="Messages\ServerUdpAnswerMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializers\BinaryMessageSerializer.cs" />
     <Compile Include="Serializers\IMessageSerializer.cs" />

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CommonLibrary
 {
-    class IndividualChatMessage : CommonChatMessage
+    public class IndividualChatMessage : CommonChatMessage
     {
         public string receiverName { get; }
 

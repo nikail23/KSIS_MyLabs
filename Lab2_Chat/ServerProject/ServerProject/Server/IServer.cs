@@ -9,7 +9,7 @@ namespace ServerProject
 {
     public interface IServer
     {
-        void Start(string serverIp, int serverPort);
+        void Start();
         void ListenUdp();
         void ListenTcp();
         void HandleReceivedMessage(Message message);
