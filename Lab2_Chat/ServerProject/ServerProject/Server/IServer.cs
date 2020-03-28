@@ -8,7 +8,7 @@ namespace ServerProject.Server
 {
     public interface IServer
     {
-        void Open();
+        void Open(string serverIp, int serverPort);
         void ListenUdp();
         void ListenTcp();
         void SendMessageToClient();
