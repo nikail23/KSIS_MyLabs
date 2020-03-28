@@ -1,0 +1,4 @@
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.csprojAssemblyReference.cache
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.mainForm.resources
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.Properties.Resources.resources
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.csproj.GenerateResource.cache

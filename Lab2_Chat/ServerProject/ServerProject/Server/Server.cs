@@ -13,7 +13,6 @@ namespace ServerProject
 {
     class Server : IServer
     {
-        const string BroadcastIp = "192.168.100.255";
         const int ClientsLimit = 10;
         private Socket tcpSocketListener;
         private Socket udpSocketListener;
@@ -70,15 +69,16 @@ namespace ServerProject
             }
         }
 
-        private Boolean SetupUdpAndTcpLocalIp(string serverIp, int serverPort)
+        private bool SetupUdpAndTcpLocalIp(string serverIp, int serverPort)
         {
             udpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             tcpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint localIp = new IPEndPoint(IPAddress.Any, serverPort);
+            IPEndPoint localUdpIp = new IPEndPoint(IPAddress.Any, 0);
+            IPEndPoint localTcpIp = new IPEndPoint(IPAddress.Parse(serverIp), serverPort);
             try
             {
-                udpSocketListener.Bind(localIp);
-                tcpSocketListener.Bind(localIp);
+                udpSocketListener.Bind(localUdpIp);              
+                tcpSocketListener.Bind(localTcpIp);
                 return true;
             }
             catch (Exception exception)
