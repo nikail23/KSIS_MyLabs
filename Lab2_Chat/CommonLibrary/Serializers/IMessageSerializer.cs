@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace CommonLibrary
 {
+
     public interface IMessageSerializer
     {
         byte[] Serialize(Message message);
