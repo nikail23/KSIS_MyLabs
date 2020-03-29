@@ -1,24 +1,20 @@
 ﻿using CommonLibrary;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ServerProject
 {
-    class Server : IServer
+    internal class Server : IServer
     {
         private const int ServerPort = 15000;
-        const int ClientsLimit = 10;
+        private const int ClientsLimit = 10;
         private Socket tcpSocketListener;
         private Socket udpSocketListener;
-        Thread listenUdpThread;
-        Thread listenTcpThread;
+        private Thread listenUdpThread;
+        private Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
 
         public Server(IMessageSerializer messageSerializer)
@@ -30,41 +26,66 @@ namespace ServerProject
 
         public void AddConnection()
         {
-            
+
         }
 
         public void Close()
         {
-            
+            if (tcpSocketListener != null)
+            {
+                tcpSocketListener.Close();
+                tcpSocketListener = null;
+            }
+            if (udpSocketListener != null)
+            {
+                udpSocketListener.Close();
+                udpSocketListener = null;
+            }
+            if (listenTcpThread != null)
+            {
+                listenTcpThread.Abort();
+                listenTcpThread = null;
+            }
+            if (listenUdpThread != null)
+            {
+                listenUdpThread.Abort();
+                listenUdpThread = null;
+            }
         }
 
         public void ListenTcp()
         {
-            
+
         }
 
         public void ListenUdp()
         {
-            try
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            EndPoint endPoint = ipEndPoint;
+            int receivedDataBytesCount;
+            byte[] receivedDataBuffer;
+            while (true)
             {
-                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                EndPoint endPoint = ipEndPoint;
-                while (true)
+                try
                 {
-                    int receivedDataBytesCount = 0;
-                    byte[] dataBuffer = new byte[10000];//new byte[udpSocketListener.Available];
-                    /*if (receiveDataBuffer.Length > 0)
+                    receivedDataBuffer = new byte[1024];
+                    using (MemoryStream memoryStream = new MemoryStream())
                     {
-                        Console.WriteLine("");
-                    }*/
-                    receivedDataBytesCount = udpSocketListener.ReceiveFrom(dataBuffer, ref endPoint);
-                    if (receivedDataBytesCount > 0)
-                        HandleReceivedMessage(messageSerializer.Deserialize(dataBuffer));
-                }                            
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception.Message);
+                        do
+                        {
+                            receivedDataBytesCount = udpSocketListener.ReceiveFrom(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None, ref endPoint);
+                            memoryStream.Write(receivedDataBuffer, 0, receivedDataBytesCount);
+                        }
+                        while (udpSocketListener.Available > 0);
+                        if (receivedDataBytesCount > 0)
+                            HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    Close();
+                }
             }
         }
 
@@ -76,7 +97,7 @@ namespace ServerProject
             IPEndPoint localTcpIp = new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ServerPort);
             try
             {
-                udpSocketListener.Bind(localUdpIp);              
+                udpSocketListener.Bind(localUdpIp);
                 tcpSocketListener.Bind(localTcpIp);
                 return true;
             }
@@ -85,7 +106,7 @@ namespace ServerProject
                 Console.WriteLine(exception.Message);
                 return false;
             }
-            
+
         }
 
         public void Start()
@@ -95,22 +116,22 @@ namespace ServerProject
                 Console.WriteLine("Server is ready to listen Tcp and Udp request's!");
                 listenUdpThread.Start();
                 listenTcpThread.Start();
-            }        
+            }
         }
 
         public void RemoveConnection()
         {
-            
+
         }
 
         public void SendMessageToAllClients()
         {
-            
+
         }
 
         public void SendMessageToClient()
         {
-            
+
         }
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
@@ -127,6 +148,11 @@ namespace ServerProject
             {
                 HandleClientUdpRequestMessage((ClientUdpRequestMessage)message);
             }
+        }
+
+        ~Server()
+        {
+            Close();
         }
     }
 }

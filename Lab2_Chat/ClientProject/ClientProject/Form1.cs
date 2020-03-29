@@ -17,10 +17,21 @@ namespace ClientProject
             client.SearchServers();
         }
 
-        private void AddServerInfoToServersListBox(Message message)
+        private void AddServerInfoToServersListBox(ServerUdpAnswerMessage serverUdpAnswerMessage)
         {
-            string serverInfo = "Server: " + message.senderIp.ToString() + ":" + message.senderPort + ";";
-            serversListBox.Items.Add(serverInfo);
+            Action action = delegate
+            {
+                string serverInfo = "Server: " + serverUdpAnswerMessage.senderIp.ToString() + ":" + serverUdpAnswerMessage.senderPort + ";";
+                serversListBox.Items.Add(serverInfo);
+            };
+            if (InvokeRequired)
+            {
+                Invoke(action);
+            }
+            else
+            {
+                action();
+            }
         }
 
 
@@ -29,19 +40,13 @@ namespace ClientProject
 
             if (message is ServerUdpAnswerMessage)
             {
-                Action action = delegate
-                {
-                    AddServerInfoToServersListBox(message);
-                };
-                if (InvokeRequired)
-                {
-                    Invoke(action);
-                } 
-                else
-                {
-                    action();
-                }
+                AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
             }
+        }
+
+        private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            client.Close();
         }
     }
 }

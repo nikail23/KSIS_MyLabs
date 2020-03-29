@@ -90,7 +90,7 @@
             this.textBox1.Location = new System.Drawing.Point(248, 47);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(380, 239);
+            this.textBox1.Size = new System.Drawing.Size(380, 215);
             this.textBox1.TabIndex = 5;
             // 
             // label2
@@ -137,6 +137,7 @@
             this.Controls.Add(this.serversListBox);
             this.Name = "mainForm";
             this.Text = "Chat";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

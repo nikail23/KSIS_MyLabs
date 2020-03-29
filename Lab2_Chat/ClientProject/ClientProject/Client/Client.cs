@@ -65,26 +65,31 @@ namespace ClientProject
 
         public void ListenUdp()
         {
-            try
+            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            EndPoint endPoint = ipEndPoint;
+            int receivedDataBytesCount;
+            byte[] receivedDataBuffer;
+            while (true)
             {
-                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
-                EndPoint endPoint = ipEndPoint;
-                while (true)
-                { 
-                    int bytesCount = 0;
-                    byte[] dataBuffer = new byte[10000];//new byte[udpSocketListener.Available]; РЕШИТЬ ПРОБЛЕМУ С 10000 байтов
-                    /*if (dataBuffer.Length > 0)
+                try
+                {
+                    receivedDataBuffer = new byte[1024];
+                    using (MemoryStream memoryStream = new MemoryStream())
                     {
-                        Console.WriteLine("");
-                    } */
-                    bytesCount = udpSocketListener.ReceiveFrom(dataBuffer, ref endPoint);
-                    if (bytesCount > 0)
-                        HandleReceivedMessage(messageSerializer.Deserialize(dataBuffer));
+                        do
+                        {
+                            receivedDataBytesCount = udpSocketListener.ReceiveFrom(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None, ref endPoint);
+                            memoryStream.Write(receivedDataBuffer, 0, receivedDataBytesCount);
+                        }
+                        while (udpSocketListener.Available > 0);
+                        if (receivedDataBytesCount > 0)
+                            HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
+                    }
                 }
-            }
-            catch (Exception exception)
-            {
-                Console.WriteLine(exception.Message);
+                catch
+                {
+
+                }
             }
         }
 
@@ -103,24 +108,33 @@ namespace ClientProject
             
         }
 
-        public void CloseTcp()
+        public void Close()
         {
             if (tcpSocketListener != null)
             {
-                tcpSocketListener.Shutdown(SocketShutdown.Both);
                 tcpSocketListener.Close();
-                tcpSocketListener = null;
+                tcpSocketListener = null;             
+            }
+            if (udpSocketListener != null)
+            {
+                udpSocketListener.Close();
+                udpSocketListener = null;           
+            }
+            if (listenTcpThread != null)
+            {
+                listenTcpThread.Abort();
+                listenTcpThread = null;
+            }
+            if (listenUdpThread != null)
+            {
+                listenUdpThread.Abort();
+                listenUdpThread = null;
             }
         }
 
-        public void CloseUdp()
+        ~Client()
         {
-            if (udpSocketListener != null)
-            {
-                udpSocketListener.Shutdown(SocketShutdown.Both);
-                udpSocketListener.Close();
-                udpSocketListener = null;
-            }
+            Close();
         }
     }
 }
