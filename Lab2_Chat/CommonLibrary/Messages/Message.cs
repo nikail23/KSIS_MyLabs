@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 
 namespace CommonLibrary
 {
@@ -6,11 +7,11 @@ namespace CommonLibrary
     {
         public DateTime dateTime { get; }
 
-        public string senderIp { get; }
+        public IPAddress senderIp { get; }
 
         public int senderPort { get; }
 
-        public Message(DateTime dateTime, string senderIp, int senderPort)
+        public Message(DateTime dateTime, IPAddress senderIp, int senderPort)
         {
             this.dateTime = dateTime;
             this.senderIp = senderIp;

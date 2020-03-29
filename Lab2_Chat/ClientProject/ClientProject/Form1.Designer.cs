@@ -47,7 +47,6 @@
             this.serversListBox.Name = "serversListBox";
             this.serversListBox.Size = new System.Drawing.Size(131, 160);
             this.serversListBox.TabIndex = 0;
-            this.serversListBox.SelectedIndexChanged += new System.EventHandler(this.serversListBox_SelectedIndexChanged);
             // 
             // clientNameTextBox
             // 
@@ -56,7 +55,6 @@
             this.clientNameTextBox.Name = "clientNameTextBox";
             this.clientNameTextBox.Size = new System.Drawing.Size(131, 20);
             this.clientNameTextBox.TabIndex = 1;
-            this.clientNameTextBox.TextChanged += new System.EventHandler(this.clientNameTextBox_TextChanged);
             // 
             // connectButton
             // 
@@ -67,7 +65,6 @@
             this.connectButton.TabIndex = 2;
             this.connectButton.Text = "Connect";
             this.connectButton.UseVisualStyleBackColor = true;
-            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
             // label1
             // 
@@ -78,7 +75,6 @@
             this.label1.Size = new System.Drawing.Size(124, 35);
             this.label1.TabIndex = 3;
             this.label1.Text = "Current chat:";
-            this.label1.Click += new System.EventHandler(this.label1_Click);
             // 
             // currentChatLabel
             // 

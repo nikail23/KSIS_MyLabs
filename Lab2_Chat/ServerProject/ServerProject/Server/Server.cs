@@ -14,7 +14,6 @@ namespace ServerProject
     class Server : IServer
     {
         private const int ServerPort = 15000;
-        private const string ServerIp = "127.0.0.1";
         const int ClientsLimit = 10;
         private Socket tcpSocketListener;
         private Socket udpSocketListener;
@@ -76,7 +75,7 @@ namespace ServerProject
             udpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             tcpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint localUdpIp = new IPEndPoint(IPAddress.Any, 0);
-            IPEndPoint localTcpIp = new IPEndPoint(IPAddress.Parse(ServerIp), ServerPort);
+            IPEndPoint localTcpIp = new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ServerPort);
             try
             {
                 udpSocketListener.Bind(localUdpIp);              
@@ -121,8 +120,8 @@ namespace ServerProject
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
         {
             IPEndPoint tcpSocketListenerEndPoint = (IPEndPoint)tcpSocketListener.RemoteEndPoint;
-            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, tcpSocketListenerEndPoint.Address.ToString(), ServerPort);
-            IPEndPoint clientEndPoint = new IPEndPoint(IPAddress.Parse(clientUdpRequestMessage.senderIp), clientUdpRequestMessage.senderPort);
+            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, tcpSocketListenerEndPoint.Address, ServerPort);
+            IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.senderIp, clientUdpRequestMessage.senderPort);
             Socket serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             serverUdpAnswerSocket.Bind(clientEndPoint);
             serverUdpAnswerSocket.Send(messageSerializer.Serialize(serverUdpAnswerMessage));

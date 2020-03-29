@@ -1,33 +1,33 @@
-﻿using System;
+﻿using CommonLibrary;
 using System.Windows.Forms;
+using Message = CommonLibrary.Message;
 
 namespace ClientProject
 {
     public partial class mainForm : Form
     {
+        private Client client;
+
         public mainForm()
         {
             InitializeComponent();
+            client.ReceiveMessageEvent += ShowReceivedMessage;
+            client = new Client(new BinaryMessageSerializer());
+            client.SearchServers();
         }
 
-        private void connectButton_Click(object sender, EventArgs e)
+        private void AddServerInfoToServersListBox(ServerUdpAnswerMessage serverUdpAnswerMessage)
         {
-
+            string serverInfo = "Server: " + serverUdpAnswerMessage.senderIp.ToString() + ":" + serverUdpAnswerMessage.senderPort + ";";
+            serversListBox.Items.Add(serverInfo);
         }
 
-        private void clientNameTextBox_TextChanged(object sender, EventArgs e)
+        public void ShowReceivedMessage(Message message)
         {
-
-        }
-
-        private void serversListBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label1_Click(object sender, EventArgs e)
-        {
-
+            if (message is ServerUdpAnswerMessage)
+            {
+                AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
+            }
         }
     }
 }
