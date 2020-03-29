@@ -13,12 +13,14 @@ namespace ClientProject
 {
     class Client : IClient
     {
-        private const int ClientPort = 15000;
-        private const string BroadcastIp = "255.255.255.255";
+        private const string BroadcastIp = "192.168.81.255";
         private const int ServerPort = 15000;
+        private const int ClientPort = 7000;
         private List<ServerInfo> servers;
         private Socket tcpSocketListener;
         private Socket udpSocketListener;
+        private Thread listenUdpThread;
+        private Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
         public delegate void ReceiveMessage(Message message);
         public event ReceiveMessage ReceiveMessageEvent;
@@ -28,7 +30,8 @@ namespace ClientProject
             servers = new List<ServerInfo>();
             tcpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             udpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            SearchServers();
+            listenUdpThread = new Thread(ListenUdp);
+            listenTcpThread = new Thread(ListenTcp);
         }
 
         public void ConnectToServer(string serverIp, int serverPort)
@@ -60,46 +63,39 @@ namespace ClientProject
             
         }
 
-
-
         public void ListenUdp()
         {
             try
             {
+                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                EndPoint endPoint = ipEndPoint;
                 while (true)
-                {
-                    int bytesCount = 0; 
-                    byte[] dataBuffer = new byte[256]; 
-                    EndPoint remoteIp = new IPEndPoint(IPAddress.Any, 0);
-                    using (MemoryStream memoryStream = new MemoryStream())
+                { 
+                    int bytesCount = 0;
+                    byte[] dataBuffer = new byte[10000];//new byte[udpSocketListener.Available]; РЕШИТЬ ПРОБЛЕМУ С 10000 байтов
+                    /*if (dataBuffer.Length > 0)
                     {
-                        do
-                        {
-                            bytesCount = udpSocketListener.ReceiveFrom(dataBuffer, ref remoteIp);
-                            memoryStream.Write(dataBuffer, 0, bytesCount);
-                        }
-                        while (udpSocketListener.Available > 0);
-                        HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
-                    }
+                        Console.WriteLine("");
+                    } */
+                    bytesCount = udpSocketListener.ReceiveFrom(dataBuffer, ref endPoint);
+                    if (bytesCount > 0)
+                        HandleReceivedMessage(messageSerializer.Deserialize(dataBuffer));
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                CloseUdp();
+                Console.WriteLine(exception.Message);
             }
         }
 
         public void SearchServers()
         {
-            IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Any, 0);  // почему не Broadcast
-            udpSocketListener.Bind(broadcastEndPoint);
-            udpSocketListener.Send(messageSerializer.Serialize(new ClientUdpRequestMessage(DateTime.Now, NetworkHelper.GetCurrrentHostIp(), ClientPort)));
-            Thread threadListenUdp = new Thread(ListenUdp);
-            threadListenUdp.Start();
+            udpSocketListener.Bind(new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ClientPort));
+            IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Parse(BroadcastIp), ServerPort);  
+            Socket sendUdpRequest = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            IPEndPoint localIp = (IPEndPoint)udpSocketListener.LocalEndPoint;
+            sendUdpRequest.SendTo(messageSerializer.Serialize(new ClientUdpRequestMessage(DateTime.Now, NetworkHelper.GetCurrrentHostIp(), localIp.Port)), broadcastEndPoint);
+            listenUdpThread.Start();
         }
 
         public void SendMessage(Message message)

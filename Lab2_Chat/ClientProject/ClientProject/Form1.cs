@@ -1,4 +1,5 @@
 ﻿using CommonLibrary;
+using System;
 using System.Windows.Forms;
 using Message = CommonLibrary.Message;
 
@@ -11,22 +12,35 @@ namespace ClientProject
         public mainForm()
         {
             InitializeComponent();
-            client.ReceiveMessageEvent += ShowReceivedMessage;
             client = new Client(new BinaryMessageSerializer());
+            client.ReceiveMessageEvent += ShowReceivedMessage;
             client.SearchServers();
         }
 
-        private void AddServerInfoToServersListBox(ServerUdpAnswerMessage serverUdpAnswerMessage)
+        private void AddServerInfoToServersListBox(Message message)
         {
-            string serverInfo = "Server: " + serverUdpAnswerMessage.senderIp.ToString() + ":" + serverUdpAnswerMessage.senderPort + ";";
+            string serverInfo = "Server: " + message.senderIp.ToString() + ":" + message.senderPort + ";";
             serversListBox.Items.Add(serverInfo);
         }
 
+
         public void ShowReceivedMessage(Message message)
         {
+
             if (message is ServerUdpAnswerMessage)
             {
-                AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
+                Action action = delegate
+                {
+                    AddServerInfoToServersListBox(message);
+                };
+                if (InvokeRequired)
+                {
+                    Invoke(action);
+                } 
+                else
+                {
+                    action();
+                }
             }
         }
     }

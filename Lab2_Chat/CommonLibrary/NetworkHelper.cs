@@ -12,7 +12,15 @@ namespace CommonLibrary
         public static IPAddress GetCurrrentHostIp()
         {
             string host = Dns.GetHostName();
-            return Dns.GetHostEntry(host).AddressList[0];
+            IPAddress[] addresses = Dns.GetHostEntry(host).AddressList;
+            foreach (var address in addresses)
+            {
+                if (address.GetAddressBytes().Length == 4)
+                {
+                    return address;
+                }
+            }
+            return null;
         }
     }
 }

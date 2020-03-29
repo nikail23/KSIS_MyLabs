@@ -3,6 +3,7 @@ using System.Net;
 
 namespace CommonLibrary
 {
+    [Serializable]
     public abstract class Message
     {
         public DateTime dateTime { get; }

@@ -17,11 +17,15 @@ namespace ServerProject
         const int ClientsLimit = 10;
         private Socket tcpSocketListener;
         private Socket udpSocketListener;
+        Thread listenUdpThread;
+        Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
 
         public Server(IMessageSerializer messageSerializer)
         {
             this.messageSerializer = messageSerializer;
+            listenUdpThread = new Thread(ListenUdp);
+            listenTcpThread = new Thread(ListenUdp);
         }
 
         public void AddConnection()
@@ -43,30 +47,24 @@ namespace ServerProject
         {
             try
             {
+                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
+                EndPoint endPoint = ipEndPoint;
                 while (true)
                 {
                     int receivedDataBytesCount = 0;
-                    byte[] receiveDataBuffer = new byte[1024];
-                    EndPoint remoteIp = new IPEndPoint(IPAddress.Any, ServerPort);
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    byte[] dataBuffer = new byte[10000];//new byte[udpSocketListener.Available];
+                    /*if (receiveDataBuffer.Length > 0)
                     {
-                        do
-                        {
-                            receivedDataBytesCount = udpSocketListener.ReceiveFrom(receiveDataBuffer, ref remoteIp);
-                            memoryStream.Write(receiveDataBuffer, 0, receivedDataBytesCount);
-                        } 
-                        while (udpSocketListener.Available > 0);
-                        HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
-                    }
+                        Console.WriteLine("");
+                    }*/
+                    receivedDataBytesCount = udpSocketListener.ReceiveFrom(dataBuffer, ref endPoint);
+                    if (receivedDataBytesCount > 0)
+                        HandleReceivedMessage(messageSerializer.Deserialize(dataBuffer));
                 }                            
             }
             catch (Exception exception)
             {
                 Console.WriteLine(exception.Message);
-            }
-            finally
-            {
-                Close();
             }
         }
 
@@ -74,7 +72,7 @@ namespace ServerProject
         {
             udpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             tcpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint localUdpIp = new IPEndPoint(IPAddress.Any, 0);
+            IPEndPoint localUdpIp = new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ServerPort);
             IPEndPoint localTcpIp = new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ServerPort);
             try
             {
@@ -95,8 +93,6 @@ namespace ServerProject
             if (SetupUdpAndTcpLocalIp())
             {
                 Console.WriteLine("Server is ready to listen Tcp and Udp request's!");
-                Thread listenUdpThread = new Thread(ListenUdp);
-                Thread listenTcpThread = new Thread(ListenTcp);
                 listenUdpThread.Start();
                 listenTcpThread.Start();
             }        
@@ -119,12 +115,10 @@ namespace ServerProject
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
         {
-            IPEndPoint tcpSocketListenerEndPoint = (IPEndPoint)tcpSocketListener.RemoteEndPoint;
-            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, tcpSocketListenerEndPoint.Address, ServerPort);
+            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, NetworkHelper.GetCurrrentHostIp(), ServerPort);
             IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.senderIp, clientUdpRequestMessage.senderPort);
             Socket serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            serverUdpAnswerSocket.Bind(clientEndPoint);
-            serverUdpAnswerSocket.Send(messageSerializer.Serialize(serverUdpAnswerMessage));
+            serverUdpAnswerSocket.SendTo(messageSerializer.Serialize(serverUdpAnswerMessage), clientEndPoint);
         }
 
         public void HandleReceivedMessage(Message message)
