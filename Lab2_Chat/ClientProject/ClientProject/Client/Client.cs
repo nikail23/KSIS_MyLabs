@@ -1,6 +1,7 @@
 ﻿using CommonLibrary;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,7 @@ namespace ClientProject
     class Client : IClient
     {
         private const string BroadcastIp = "192.168.81.255";
-        private const int ServerPort = 15000;
+        private const int ServerPort = 50000;
         private const int ClientPort = 7000;
         private List<ServerInfo> serversInfo;
         private Socket tcpSocket;
@@ -34,7 +35,7 @@ namespace ClientProject
             listenTcpThread = new Thread(ListenTcp);
         }
 
-        public void ConnectToServer(int serverIndex)
+        public void ConnectToServer(int serverIndex, string clientName)
         {
             try
             {
@@ -43,10 +44,14 @@ namespace ClientProject
                     ServerInfo serverInfo = GetServerInfo(serverIndex);
                     IPEndPoint clientIp = new IPEndPoint(serverInfo.ServerIp, serverInfo.ServerPort);
                     tcpSocket.Connect(clientIp);
+                    RegistrationMessage registrationMessage = new RegistrationMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ClientPort, clientName);
+                    SendMessage(registrationMessage);
+                    listenTcpThread.Start();
                 }
             }
-            catch 
+            catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
                 Close();
             }
                  
@@ -73,7 +78,30 @@ namespace ClientProject
 
         public void ListenTcp()
         {
-            
+            int receivedDataBytesCount;
+            byte[] receivedDataBuffer;
+            while (true)
+            {
+                try
+                {
+                    receivedDataBuffer = new byte[1024];
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        do
+                        {
+                            receivedDataBytesCount = tcpSocket.Receive(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None);
+                            memoryStream.Write(receivedDataBuffer, 0, receivedDataBytesCount);
+                        }
+                        while (udpSocket.Available > 0);
+                        if (receivedDataBytesCount > 0)
+                            HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
+                    }
+                }
+                catch
+                {
+
+                }
+            }
         }
 
         public void ListenUdp()
@@ -101,14 +129,14 @@ namespace ClientProject
                 }
                 catch
                 {
-
+                    
                 }
             }
         }
 
         public void SearchServers()
         {
-            udpSocket.Bind(new IPEndPoint(CommonFunctions.GetCurrrentHostIp(), ClientPort));
+            udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0)); 
             IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Parse(BroadcastIp), ServerPort);  
             Socket sendUdpRequest = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             IPEndPoint localIp = (IPEndPoint)udpSocket.LocalEndPoint;
@@ -118,7 +146,7 @@ namespace ClientProject
 
         public void SendMessage(Message message)
         {
-            
+            tcpSocket.Send(messageSerializer.Serialize(message));
         }
 
         public void Close()
@@ -136,11 +164,6 @@ namespace ClientProject
                 return serversInfo[serverIndex];
             }
             return null;
-        }
-
-        ~Client()
-        {
-            Close();
         }
     }
 }

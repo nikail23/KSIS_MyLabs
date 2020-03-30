@@ -70,7 +70,8 @@ namespace ClientProject
             string clientUsername = "";
             if (ClientUsernameCheck(clientUsername))
             {
-                client.ConnectToServer(serverIndex);
+                int serverIndex = serversListBox.SelectedIndex;
+                client.ConnectToServer(serverIndex, clientUsername);
             }
         }
     }

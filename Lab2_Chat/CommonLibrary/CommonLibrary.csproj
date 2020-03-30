@@ -45,6 +45,7 @@
     <Compile Include="Messages\CommonChatMessage.cs" />
     <Compile Include="Messages\IndividualChatMessage.cs" />
     <Compile Include="Messages\Message.cs" />
+    <Compile Include="Messages\RegistrationMessage.cs" />
     <Compile Include="Messages\ServerUdpAnswerMessage.cs" />
     <Compile Include="CommonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
