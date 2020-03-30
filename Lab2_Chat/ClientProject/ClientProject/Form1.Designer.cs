@@ -37,6 +37,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.messageTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // serversListBox
@@ -65,6 +66,7 @@
             this.connectButton.TabIndex = 2;
             this.connectButton.Text = "Connect";
             this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
             // label1
             // 
@@ -90,7 +92,8 @@
             this.textBox1.Location = new System.Drawing.Point(248, 47);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(380, 215);
+            this.textBox1.ReadOnly = true;
+            this.textBox1.Size = new System.Drawing.Size(380, 192);
             this.textBox1.TabIndex = 5;
             // 
             // label2
@@ -121,11 +124,20 @@
             this.label3.TabIndex = 8;
             this.label3.Text = "Servers list:";
             // 
+            // messageTextBox
+            // 
+            this.messageTextBox.Location = new System.Drawing.Point(248, 245);
+            this.messageTextBox.Name = "messageTextBox";
+            this.messageTextBox.Size = new System.Drawing.Size(380, 20);
+            this.messageTextBox.TabIndex = 9;
+            this.messageTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.messageTextBox_KeyDown);
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 298);
+            this.Controls.Add(this.messageTextBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.label2);
@@ -154,6 +166,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox messageTextBox;
     }
 }
 

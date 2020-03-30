@@ -10,6 +10,10 @@ namespace CommonLibrary
     [Serializable]
     public class ServerUdpAnswerMessage : Message
     {
-        public ServerUdpAnswerMessage(DateTime dateTime, IPAddress senderIp, int senderPort) : base(dateTime, senderIp, senderPort) { }
+        public string serverName { get; }
+        public ServerUdpAnswerMessage(DateTime dateTime, IPAddress serverIp, int serverPort, string serverName) : base(dateTime, serverIp, serverPort) 
+        {
+            this.serverName = serverName;
+        }
     }
 }

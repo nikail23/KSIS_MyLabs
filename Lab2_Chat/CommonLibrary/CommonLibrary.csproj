@@ -46,7 +46,7 @@
     <Compile Include="Messages\IndividualChatMessage.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\ServerUdpAnswerMessage.cs" />
-    <Compile Include="NetworkHelper.cs" />
+    <Compile Include="CommonFunctions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializers\BinaryMessageSerializer.cs" />
     <Compile Include="Serializers\IMessageSerializer.cs" />

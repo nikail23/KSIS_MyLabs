@@ -11,8 +11,9 @@ namespace ServerProject
     {
         private const int ServerPort = 15000;
         private const int ClientsLimit = 10;
-        private Socket tcpSocketListener;
-        private Socket udpSocketListener;
+        private string name;
+        private Socket tcpSocket;
+        private Socket udpSocket;
         private Thread listenUdpThread;
         private Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
@@ -31,26 +32,10 @@ namespace ServerProject
 
         public void Close()
         {
-            if (tcpSocketListener != null)
-            {
-                tcpSocketListener.Close();
-                tcpSocketListener = null;
-            }
-            if (udpSocketListener != null)
-            {
-                udpSocketListener.Close();
-                udpSocketListener = null;
-            }
-            if (listenTcpThread != null)
-            {
-                listenTcpThread.Abort();
-                listenTcpThread = null;
-            }
-            if (listenUdpThread != null)
-            {
-                listenUdpThread.Abort();
-                listenUdpThread = null;
-            }
+            CommonFunctions.CloseAndNullSocket(ref tcpSocket);
+            CommonFunctions.CloseAndNullSocket(ref udpSocket);
+            CommonFunctions.CloseAndNullThread(ref listenTcpThread);
+            CommonFunctions.CloseAndNullThread(ref listenUdpThread);
         }
 
         public void ListenTcp()
@@ -73,10 +58,10 @@ namespace ServerProject
                     {
                         do
                         {
-                            receivedDataBytesCount = udpSocketListener.ReceiveFrom(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None, ref endPoint);
+                            receivedDataBytesCount = udpSocket.ReceiveFrom(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None, ref endPoint);
                             memoryStream.Write(receivedDataBuffer, 0, receivedDataBytesCount);
                         }
-                        while (udpSocketListener.Available > 0);
+                        while (udpSocket.Available > 0);
                         if (receivedDataBytesCount > 0)
                             HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
@@ -91,14 +76,14 @@ namespace ServerProject
 
         private bool SetupUdpAndTcpLocalIp()
         {
-            udpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            tcpSocketListener = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint localUdpIp = new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ServerPort);
-            IPEndPoint localTcpIp = new IPEndPoint(NetworkHelper.GetCurrrentHostIp(), ServerPort);
+            udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            IPEndPoint localUdpIp = new IPEndPoint(CommonFunctions.GetCurrrentHostIp(), ServerPort);
+            IPEndPoint localTcpIp = new IPEndPoint(CommonFunctions.GetCurrrentHostIp(), ServerPort);
             try
             {
-                udpSocketListener.Bind(localUdpIp);
-                tcpSocketListener.Bind(localTcpIp);
+                udpSocket.Bind(localUdpIp);
+                tcpSocket.Bind(localTcpIp);
                 return true;
             }
             catch (Exception exception)
@@ -111,6 +96,8 @@ namespace ServerProject
 
         public void Start()
         {
+            Console.Write("Server name: ");
+            name = Console.ReadLine();
             if (SetupUdpAndTcpLocalIp())
             {
                 Console.WriteLine("Server is ready to listen Tcp and Udp request's!");
@@ -136,7 +123,7 @@ namespace ServerProject
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
         {
-            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, NetworkHelper.GetCurrrentHostIp(), ServerPort);
+            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ServerPort, name);
             IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.senderIp, clientUdpRequestMessage.senderPort);
             Socket serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             serverUdpAnswerSocket.SendTo(messageSerializer.Serialize(serverUdpAnswerMessage), clientEndPoint);
@@ -148,11 +135,6 @@ namespace ServerProject
             {
                 HandleClientUdpRequestMessage((ClientUdpRequestMessage)message);
             }
-        }
-
-        ~Server()
-        {
-            Close();
         }
     }
 }

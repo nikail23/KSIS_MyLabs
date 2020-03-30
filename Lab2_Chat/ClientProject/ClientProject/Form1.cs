@@ -21,7 +21,7 @@ namespace ClientProject
         {
             Action action = delegate
             {
-                string serverInfo = "Server: " + serverUdpAnswerMessage.senderIp.ToString() + ":" + serverUdpAnswerMessage.senderPort + ";";
+                string serverInfo = serverUdpAnswerMessage.serverName;
                 serversListBox.Items.Add(serverInfo);
             };
             if (InvokeRequired)
@@ -47,6 +47,31 @@ namespace ClientProject
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             client.Close();
+        }
+
+        private void messageTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            //client.SendMessage();
+        }
+
+        private bool ClientUsernameCheck(string clientUsername)
+        {
+            if (clientNameTextBox.Text != "")
+            {
+                clientUsername = clientNameTextBox.Text;
+                return true;
+            }             
+            MessageBox.Show("Client username field is empty!");
+            return false;
+        }
+
+        private void connectButton_Click(object sender, EventArgs e)
+        {
+            string clientUsername = "";
+            if (ClientUsernameCheck(clientUsername))
+            {
+                client.ConnectToServer(serverIndex);
+            }
         }
     }
 }

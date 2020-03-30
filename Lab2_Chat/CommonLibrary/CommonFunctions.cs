@@ -2,13 +2,33 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CommonLibrary
 {
-    public static class NetworkHelper
+    public static class CommonFunctions
     {
+        public static void CloseAndNullSocket(ref Socket socket)
+        {
+            if (socket != null)
+            {
+                socket.Close();
+                socket = null;
+            }
+        }
+
+        public static void CloseAndNullThread(ref Thread thread)
+        {
+            if (thread != null)
+            {
+                thread.Abort();
+                thread = null;
+            }
+        }
+
         public static IPAddress GetCurrrentHostIp()
         {
             string host = Dns.GetHostName();
