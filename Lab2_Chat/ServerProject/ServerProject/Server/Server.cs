@@ -14,7 +14,7 @@ namespace ServerProject
         private const int ServerPort = 50000;
         private const int ClientsLimit = 10;
         private string name;
-        private List<ClientInfo> clients;
+        private List<ClientHandler> clients;
         private Socket tcpSocket;
         private Socket udpSocket;
         private Thread listenUdpThread;
@@ -24,9 +24,9 @@ namespace ServerProject
         public Server(IMessageSerializer messageSerializer)
         {
             this.messageSerializer = messageSerializer;
-            clients = new List<ClientInfo>();
+            clients = new List<ClientHandler>();
             listenUdpThread = new Thread(ListenUdp);
-            listenTcpThread = new Thread(ListenUdp);
+            listenTcpThread = new Thread(ListenTcp);
         }
 
         public void AddConnection()
@@ -64,13 +64,7 @@ namespace ServerProject
                         }
                         while (udpSocket.Available > 0);
                         if (receivedDataBytesCount > 0)
-                        {
-                            Message message = messageSerializer.Deserialize(memoryStream.ToArray());
-                            if (message is RegistrationMessage)
-                                HandleRegistrationMessage((RegistrationMessage)message, connectedSocket);
-                            else
-                                HandleReceivedMessage(message);
-                        }
+                            HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()), connectedSocket);
                     }
                 }
                 catch (Exception ex)
@@ -147,28 +141,38 @@ namespace ServerProject
 
         }
 
-        public void SendMessageToAllClients()
+        public void SendMessageToAllClients(Message message)
         {
-
+            foreach (ClientHandler clientHandler in clients)
+            {
+                SendMessageToClient(message, clientHandler);
+            }
         }
 
-        public void SendMessageToClient()
+        public void SendMessageToClient(Message message, ClientHandler clientHandler)
         {
-
+            clientHandler.TcpSocket.Send(messageSerializer.Serialize(message));
         }
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
         {
             ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ServerPort, name);
-            IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.senderIp, clientUdpRequestMessage.senderPort);
+            IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.SenderIp, clientUdpRequestMessage.SenderPort);
             Socket serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             serverUdpAnswerSocket.SendTo(messageSerializer.Serialize(serverUdpAnswerMessage), clientEndPoint);
         }
 
         private void HandleRegistrationMessage(RegistrationMessage registrationMessage, Socket connectedSocket)
         {
-            clients.Add(new ClientInfo(registrationMessage.clientName, connectedSocket));
-            Console.WriteLine(registrationMessage.clientName + " has join the server");
+            ClientHandler clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, messageSerializer);
+            clientHandler.ReceiveMessageEvent += HandleReceivedMessage;
+            clients.Add(clientHandler);
+            clientHandler.StartListenTcp();
+        }
+
+        private void HandleCommonChatMessage(CommonChatMessage commonChatMessage)
+        {
+            SendMessageToAllClients(commonChatMessage);
         }
 
         public void HandleReceivedMessage(Message message)
@@ -176,9 +180,25 @@ namespace ServerProject
             if (message is ClientUdpRequestMessage)
             {
                 ClientUdpRequestMessage clientUdpRequestMessage = (ClientUdpRequestMessage)message;
-                WriteLine("Received a broadcast UDP request for connection info from " + clientUdpRequestMessage.senderIp.ToString() + ":" + clientUdpRequestMessage.senderPort);
+                WriteLine("Received a broadcast UDP request for connection info from " + clientUdpRequestMessage.SenderIp.ToString() + ":" + clientUdpRequestMessage.SenderPort);
                 HandleClientUdpRequestMessage(clientUdpRequestMessage);
-                WriteLine("Send UDP answer with server connection info to " + clientUdpRequestMessage.senderIp.ToString() + ":" + clientUdpRequestMessage.senderPort);
+                WriteLine("Send UDP answer with server connection info to " + clientUdpRequestMessage.SenderIp.ToString() + ":" + clientUdpRequestMessage.SenderPort);
+            }
+            if (message is CommonChatMessage)
+            {
+                CommonChatMessage commonChatMessage = (CommonChatMessage)message;
+                WriteLine("\"" + "\": " + commonChatMessage.Content);  // сделать name в client ( так в 100000 раз удобнее )
+                HandleCommonChatMessage(commonChatMessage);            // пофиксить прием сообщений и вывод на клиенте, до сервака норм доходит
+            }
+        }
+
+        public void HandleReceivedMessage(Message message, Socket connectedSocket)
+        {
+            if (message is RegistrationMessage)
+            {
+                RegistrationMessage registrationMessage = (RegistrationMessage)message;
+                WriteLine("\"" + registrationMessage.ClientName + "\" has join the server");
+                HandleRegistrationMessage(registrationMessage, connectedSocket);               
             }
         }
 

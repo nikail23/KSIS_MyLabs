@@ -13,8 +13,8 @@ namespace ServerProject
         void ListenUdp();
         void ListenTcp();
         void HandleReceivedMessage(Message message);
-        void SendMessageToClient();
-        void SendMessageToAllClients();
+        void SendMessageToClient(Message message, ClientHandler clientHandler);
+        void SendMessageToAllClients(Message message);
         void AddConnection();
         void RemoveConnection();
         void Close();

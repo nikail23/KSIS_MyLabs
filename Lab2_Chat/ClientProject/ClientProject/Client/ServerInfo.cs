@@ -9,12 +9,15 @@ namespace ClientProject
 {
     public class ServerInfo
     {
+        public string ServerName { get; }
+
         public IPAddress ServerIp { get; }
 
         public int ServerPort { get; }
 
-        public ServerInfo(IPAddress serverIp, int serverPort)
+        public ServerInfo(string serverName, IPAddress serverIp, int serverPort)
         {
+            ServerName = serverName;
             ServerIp = serverIp;
             ServerPort = serverPort;
         }

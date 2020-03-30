@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 namespace CommonLibrary
 {
+    [Serializable]
     public class RegistrationMessage : Message
     {
-        public string clientName { get; }
+        public string ClientName { get; }
 
         public RegistrationMessage(DateTime dateTime, IPAddress clientIp, int clientPort, string clientName) : base(dateTime, clientIp, clientPort)
         {
-            this.clientName = clientName;
+            ClientName = clientName;
         }
     }
 }

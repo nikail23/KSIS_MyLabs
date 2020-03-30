@@ -21,7 +21,7 @@ namespace ClientProject
         {
             Action action = delegate
             {
-                string serverInfo = serverUdpAnswerMessage.serverName;
+                string serverInfo = serverUdpAnswerMessage.ServerName;
                 serversListBox.Items.Add(serverInfo);
             };
             if (InvokeRequired)
@@ -49,12 +49,7 @@ namespace ClientProject
             client.Close();
         }
 
-        private void messageTextBox_KeyDown(object sender, KeyEventArgs e)
-        {
-            //client.SendMessage();
-        }
-
-        private bool ClientUsernameCheck(string clientUsername)
+        private bool ClientUsernameCheck(ref string clientUsername)
         {
             if (clientNameTextBox.Text != "")
             {
@@ -68,11 +63,17 @@ namespace ClientProject
         private void connectButton_Click(object sender, EventArgs e)
         {
             string clientUsername = "";
-            if (ClientUsernameCheck(clientUsername))
+            if (ClientUsernameCheck(ref clientUsername))
             {
                 int serverIndex = serversListBox.SelectedIndex;
                 client.ConnectToServer(serverIndex, clientUsername);
             }
+        }
+
+        private void sendMessageButton_Click(object sender, EventArgs e)
+        {
+            client.SendMessage(messageTextBox.Text);
+            messageTextBox.Clear();
         }
     }
 }

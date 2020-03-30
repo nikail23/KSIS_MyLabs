@@ -38,6 +38,7 @@
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
             this.messageTextBox = new System.Windows.Forms.TextBox();
+            this.sendMessageButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // serversListBox
@@ -93,7 +94,7 @@
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(380, 192);
+            this.textBox1.Size = new System.Drawing.Size(380, 179);
             this.textBox1.TabIndex = 5;
             // 
             // label2
@@ -126,17 +127,28 @@
             // 
             // messageTextBox
             // 
-            this.messageTextBox.Location = new System.Drawing.Point(248, 245);
+            this.messageTextBox.Location = new System.Drawing.Point(248, 236);
             this.messageTextBox.Name = "messageTextBox";
             this.messageTextBox.Size = new System.Drawing.Size(380, 20);
             this.messageTextBox.TabIndex = 9;
-            this.messageTextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.messageTextBox_KeyDown);
+            // 
+            // sendMessageButton
+            // 
+            this.sendMessageButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.sendMessageButton.Location = new System.Drawing.Point(248, 262);
+            this.sendMessageButton.Name = "sendMessageButton";
+            this.sendMessageButton.Size = new System.Drawing.Size(380, 32);
+            this.sendMessageButton.TabIndex = 10;
+            this.sendMessageButton.Text = "Send";
+            this.sendMessageButton.UseVisualStyleBackColor = true;
+            this.sendMessageButton.Click += new System.EventHandler(this.sendMessageButton_Click);
             // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 298);
+            this.Controls.Add(this.sendMessageButton);
             this.Controls.Add(this.messageTextBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.listBox1);
@@ -167,6 +179,7 @@
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox messageTextBox;
+        private System.Windows.Forms.Button sendMessageButton;
     }
 }
 

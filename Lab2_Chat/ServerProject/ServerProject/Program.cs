@@ -13,12 +13,12 @@ namespace ServerProject
         {
             Server server = new Server(new BinaryMessageSerializer());
             server.Start();
-            while (true)
-            {
-                string serverCommand = Console.ReadLine();
-                if (serverCommand == "stop")
-                    server.Close();
-            }
+            //while (true)
+            //{
+            //    string serverCommand = Console.ReadLine();
+            //    if (serverCommand == "stop")
+            //        server.Close();
+            //}
         }
     }
 }

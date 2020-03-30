@@ -64,7 +64,7 @@ namespace ClientProject
 
         private void AddNewServerInfo(ServerUdpAnswerMessage serverUdpAnswerMessage)
         {
-            serversInfo.Add(new ServerInfo(serverUdpAnswerMessage.senderIp, serverUdpAnswerMessage.senderPort));
+            serversInfo.Add(new ServerInfo(serverUdpAnswerMessage.ServerName, serverUdpAnswerMessage.SenderIp, serverUdpAnswerMessage.SenderPort));
         }
 
         public void HandleReceivedMessage(Message message)
@@ -92,7 +92,7 @@ namespace ClientProject
                             receivedDataBytesCount = tcpSocket.Receive(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None);
                             memoryStream.Write(receivedDataBuffer, 0, receivedDataBytesCount);
                         }
-                        while (udpSocket.Available > 0);
+                        while (tcpSocket.Available > 0);
                         if (receivedDataBytesCount > 0)
                             HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
@@ -142,6 +142,13 @@ namespace ClientProject
             IPEndPoint localIp = (IPEndPoint)udpSocket.LocalEndPoint;
             sendUdpRequest.SendTo(messageSerializer.Serialize(new ClientUdpRequestMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), localIp.Port)), broadcastEndPoint);
             listenUdpThread.Start();
+        }
+
+        public void SendMessage(string content)
+        {
+            // всякие там условия в зависимости от выбранного диалога
+            CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ServerPort, content);
+            tcpSocket.Send(messageSerializer.Serialize(commonChatMessage));
         }
 
         public void SendMessage(Message message)

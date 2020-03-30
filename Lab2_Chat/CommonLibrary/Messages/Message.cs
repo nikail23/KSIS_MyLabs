@@ -6,17 +6,17 @@ namespace CommonLibrary
     [Serializable]
     public abstract class Message
     {
-        public DateTime dateTime { get; }
+        public DateTime DateTime { get; }
 
-        public IPAddress senderIp { get; }
+        public IPAddress SenderIp { get; }
 
-        public int senderPort { get; }
+        public int SenderPort { get; }
 
         public Message(DateTime dateTime, IPAddress senderIp, int senderPort)
         {
-            this.dateTime = dateTime;
-            this.senderIp = senderIp;
-            this.senderPort = senderPort;
+            DateTime = dateTime;
+            SenderIp = senderIp;
+            SenderPort = senderPort;
         }
     }
 }

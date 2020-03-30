@@ -15,7 +15,7 @@ namespace ClientProject
         void ListenTcp();
         void ListenUdp();
         void ConnectToServer(int serverIndex, string clientName);
-        void SendMessage(Message message);
+        void SendMessage(string content);
         void DisconnectFromServer();
         void Close();
     }
