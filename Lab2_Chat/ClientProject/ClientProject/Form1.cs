@@ -34,6 +34,22 @@ namespace ClientProject
             }
         }
 
+        private void AddNewCommonChatMessage(CommonChatMessage commonChatMessage)
+        {
+            Action action = delegate
+            {
+                string chatContent = "[" + commonChatMessage.DateTime.ToString() + " " + commonChatMessage.SenderIp.ToString() + ":" + commonChatMessage.SenderPort + "]: \"" + commonChatMessage.SenderName + "\": " + commonChatMessage.Content + "\n";
+                chatTextBox.Text += chatContent;            
+            };
+            if (InvokeRequired)
+            {
+                Invoke(action);
+            }
+            else
+            {
+                action();
+            }
+        }
 
         public void ShowReceivedMessage(Message message)
         {
@@ -41,6 +57,10 @@ namespace ClientProject
             if (message is ServerUdpAnswerMessage)
             {
                 AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
+            }
+            if (message is CommonChatMessage)
+            {
+                AddNewCommonChatMessage((CommonChatMessage)message);
             }
         }
 

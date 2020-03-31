@@ -136,9 +136,10 @@ namespace ServerProject
             }
         }
 
-        public void RemoveConnection()
+        public void RemoveConnection(ClientHandler disconnectedClient)
         {
-
+            if (clients.Remove(disconnectedClient))
+                WriteLine(disconnectedClient.Name + " left from the chat!");
         }
 
         public void SendMessageToAllClients(Message message)
@@ -166,6 +167,7 @@ namespace ServerProject
         {
             ClientHandler clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, messageSerializer);
             clientHandler.ReceiveMessageEvent += HandleReceivedMessage;
+            clientHandler.ClientDisconnectedEvent += RemoveConnection;
             clients.Add(clientHandler);
             clientHandler.StartListenTcp();
         }
@@ -187,7 +189,7 @@ namespace ServerProject
             if (message is CommonChatMessage)
             {
                 CommonChatMessage commonChatMessage = (CommonChatMessage)message;
-                WriteLine("\"" + "\": " + commonChatMessage.Content);  // сделать name в client ( так в 100000 раз удобнее )
+                WriteLine("\"" + commonChatMessage.SenderName + "\": " + commonChatMessage.Content);  // сделать name в client ( так в 100000 раз удобнее )
                 HandleCommonChatMessage(commonChatMessage);            // пофиксить прием сообщений и вывод на клиенте, до сервака норм доходит
             }
         }

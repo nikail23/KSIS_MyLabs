@@ -12,7 +12,7 @@ namespace CommonLibrary
     {
         public string ReceiverName { get; }
 
-        public IndividualChatMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, string receiverName) : base(dateTime, senderIp, senderPort, content)
+        public IndividualChatMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, string senderName, string receiverName) : base(dateTime, senderIp, senderPort, content, senderName)
         {
             ReceiverName = receiverName;
         }

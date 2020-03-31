@@ -17,6 +17,7 @@ namespace ClientProject
         private const string BroadcastIp = "192.168.81.255";
         private const int ServerPort = 50000;
         private const int ClientPort = 7000;
+        private string name;
         private List<ServerInfo> serversInfo;
         private Socket tcpSocket;
         private Socket udpSocket;
@@ -39,14 +40,16 @@ namespace ClientProject
         {
             try
             {
+                name = clientName;
                 if ((serverIndex >= 0) && (serverIndex <= serversInfo.Count - 1))
                 {
                     ServerInfo serverInfo = GetServerInfo(serverIndex);
-                    IPEndPoint clientIp = new IPEndPoint(serverInfo.ServerIp, serverInfo.ServerPort);
-                    tcpSocket.Connect(clientIp);
-                    RegistrationMessage registrationMessage = new RegistrationMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ClientPort, clientName);
-                    SendMessage(registrationMessage);
+                    IPEndPoint serverIp = new IPEndPoint(serverInfo.ServerIp, serverInfo.ServerPort);
+                    tcpSocket.Connect(serverIp);
                     listenTcpThread.Start();
+                    IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+                    RegistrationMessage registrationMessage = new RegistrationMessage(DateTime.Now, clientIp.Address, clientIp.Port, name);
+                    SendMessage(registrationMessage);
                 }
             }
             catch (Exception ex)
@@ -146,8 +149,8 @@ namespace ClientProject
 
         public void SendMessage(string content)
         {
-            // всякие там условия в зависимости от выбранного диалога
-            CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ServerPort, content);
+            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, name);
             tcpSocket.Send(messageSerializer.Serialize(commonChatMessage));
         }
 

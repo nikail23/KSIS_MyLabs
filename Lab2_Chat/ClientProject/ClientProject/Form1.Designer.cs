@@ -33,7 +33,7 @@
             this.connectButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.currentChatLabel = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.chatTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -88,14 +88,14 @@
             this.currentChatLabel.Size = new System.Drawing.Size(0, 35);
             this.currentChatLabel.TabIndex = 4;
             // 
-            // textBox1
+            // chatTextBox
             // 
-            this.textBox1.Location = new System.Drawing.Point(248, 47);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(380, 179);
-            this.textBox1.TabIndex = 5;
+            this.chatTextBox.Location = new System.Drawing.Point(248, 47);
+            this.chatTextBox.Multiline = true;
+            this.chatTextBox.Name = "chatTextBox";
+            this.chatTextBox.ReadOnly = true;
+            this.chatTextBox.Size = new System.Drawing.Size(380, 179);
+            this.chatTextBox.TabIndex = 5;
             // 
             // label2
             // 
@@ -153,7 +153,7 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.listBox1);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.chatTextBox);
             this.Controls.Add(this.currentChatLabel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.connectButton);
@@ -174,7 +174,7 @@
         private System.Windows.Forms.Button connectButton;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label currentChatLabel;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox chatTextBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.Label label3;

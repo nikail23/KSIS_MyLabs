@@ -1,6 +1,7 @@
 ﻿using CommonLibrary;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
@@ -12,12 +13,14 @@ namespace ServerProject
 {
     public class ClientHandler
     {
-        public string Name { get; }
-        public Socket TcpSocket { get; }
+        public string Name;
+        public Socket TcpSocket;
         private Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
         public delegate void ReceiveMessageDelegate(Message message);
         public event ReceiveMessageDelegate ReceiveMessageEvent;
+        public delegate void ClientDisconnected(ClientHandler clientHandler);
+        public event ClientDisconnected ClientDisconnectedEvent;
 
         public ClientHandler(string name, Socket socket, IMessageSerializer messageSerializer)
         {
@@ -53,9 +56,11 @@ namespace ServerProject
                             ReceiveMessageEvent(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
                 }
-                catch
+                catch (SocketException socketException)
                 {
-
+                    ClientDisconnectedEvent(this);
+                    CommonFunctions.CloseAndNullSocket(ref TcpSocket);
+                    CommonFunctions.CloseAndNullThread(ref listenTcpThread);            
                 }
             }
         }

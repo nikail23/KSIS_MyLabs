@@ -16,7 +16,7 @@ namespace ServerProject
         void SendMessageToClient(Message message, ClientHandler clientHandler);
         void SendMessageToAllClients(Message message);
         void AddConnection();
-        void RemoveConnection();
+        void RemoveConnection(ClientHandler disconnectedClient);
         void Close();
     }
 }
