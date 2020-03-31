@@ -9,6 +9,14 @@ using System.Threading.Tasks;
 
 namespace CommonLibrary
 {
+    [Serializable]
+    public struct ChatParticipant
+    {
+        public string name;
+        public int id;
+        public List<Message> messageHistory;
+    }
+
     public static class CommonFunctions
     {
         public static void CloseAndNullSocket(ref Socket socket)

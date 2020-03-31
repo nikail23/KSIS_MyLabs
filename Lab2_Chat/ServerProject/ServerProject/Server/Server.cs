@@ -13,8 +13,11 @@ namespace ServerProject
     {
         private const int ServerPort = 50000;
         private const int ClientsLimit = 10;
+        private const int CommonChatId = 0;
+        private const string CommonChatName = "Common chat";
         private string name;
         private List<ClientHandler> clients;
+        private List<Message> messageHistory;
         private Socket tcpSocket;
         private Socket udpSocket;
         private Thread listenUdpThread;
@@ -25,6 +28,7 @@ namespace ServerProject
         {
             this.messageSerializer = messageSerializer;
             clients = new List<ClientHandler>();
+            messageHistory = new List<Message>();
             listenUdpThread = new Thread(ListenUdp);
             listenTcpThread = new Thread(ListenTcp);
         }
@@ -36,6 +40,9 @@ namespace ServerProject
 
         public void Close()
         {
+            messageSerializer = null;
+            messageHistory.Clear();
+            messageHistory = null;
             clients.Clear();
             clients = null;
             CommonFunctions.CloseAndNullSocket(ref tcpSocket);
@@ -139,7 +146,9 @@ namespace ServerProject
         public void RemoveConnection(ClientHandler disconnectedClient)
         {
             if (clients.Remove(disconnectedClient))
-                WriteLine(disconnectedClient.Name + " left from the chat!");
+                WriteLine("\"" + disconnectedClient.name + "\"" + " left from the chat!");
+            SendMessageToAllClients(GetParticipantsListMessage());
+            SendMessageToAllClients(GetMessagesHistoryMessage());
         }
 
         public void SendMessageToAllClients(Message message)
@@ -152,7 +161,7 @@ namespace ServerProject
 
         public void SendMessageToClient(Message message, ClientHandler clientHandler)
         {
-            clientHandler.TcpSocket.Send(messageSerializer.Serialize(message));
+            clientHandler.tcpSocket.Send(messageSerializer.Serialize(message));
         }
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
@@ -165,16 +174,34 @@ namespace ServerProject
 
         private void HandleRegistrationMessage(RegistrationMessage registrationMessage, Socket connectedSocket)
         {
-            ClientHandler clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, messageSerializer);
+            ClientHandler clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, GetClientUniqueId(), messageSerializer);
             clientHandler.ReceiveMessageEvent += HandleReceivedMessage;
             clientHandler.ClientDisconnectedEvent += RemoveConnection;
             clients.Add(clientHandler);
             clientHandler.StartListenTcp();
+            IPEndPoint serverIp = (IPEndPoint)tcpSocket.LocalEndPoint;
+            SendMessageToClient(new SendIdMessage(DateTime.Now, serverIp.Address, serverIp.Port, clientHandler.id), clientHandler);
+            SendMessageToAllClients(GetParticipantsListMessage());
+            SendMessageToAllClients(GetMessagesHistoryMessage());
         }
 
         private void HandleCommonChatMessage(CommonChatMessage commonChatMessage)
         {
+            messageHistory.Add(commonChatMessage);
             SendMessageToAllClients(commonChatMessage);
+            SendMessageToAllClients(GetMessagesHistoryMessage());
+        }
+
+        private void HandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
+        {
+            foreach (ClientHandler clientHandler in clients)
+            {
+                if (clientHandler.id == individualChatMessage.ReceiverId)
+                {
+                    SendMessageToClient(individualChatMessage, clientHandler);
+                    break;
+                }
+            }
         }
 
         public void HandleReceivedMessage(Message message)
@@ -186,10 +213,15 @@ namespace ServerProject
                 HandleClientUdpRequestMessage(clientUdpRequestMessage);
                 WriteLine("Send UDP answer with server connection info to " + clientUdpRequestMessage.SenderIp.ToString() + ":" + clientUdpRequestMessage.SenderPort);
             }
-            if (message is CommonChatMessage)
+            if (message is IndividualChatMessage)
+            {
+                IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
+                HandleIndividualChatMessage(individualChatMessage);
+            }
+            else if (message is CommonChatMessage)
             {
                 CommonChatMessage commonChatMessage = (CommonChatMessage)message;
-                WriteLine("\"" + commonChatMessage.SenderName + "\": " + commonChatMessage.Content);  // сделать name в client ( так в 100000 раз удобнее )
+                WriteLine("\"" + GetName(commonChatMessage.SenderId) + "\": " + commonChatMessage.Content);  // сделать name в client ( так в 100000 раз удобнее )
                 HandleCommonChatMessage(commonChatMessage);            // пофиксить прием сообщений и вывод на клиенте, до сервака норм доходит
             }
         }
@@ -207,6 +239,47 @@ namespace ServerProject
         private void WriteLine(string content)
         {
             Console.WriteLine("[" + DateTime.Now.ToString() + "]: " + content + ";");
+        }
+
+        private string GetName(int id)
+        {
+            foreach (ClientHandler clientHandler in clients)
+            {
+                if (id == clientHandler.id)
+                {
+                    return clientHandler.name;
+                }
+            }
+            return null;
+        }
+
+        private MessagesHistoryMessage GetMessagesHistoryMessage()
+        {
+            IPEndPoint serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            return new MessagesHistoryMessage(DateTime.Now, serverIp.Address, serverIp.Port, messageHistory);
+        }
+
+        private ParticipantsListMessage GetParticipantsListMessage()
+        {
+            List<ChatParticipant> participantsList = new List<ChatParticipant>();
+            participantsList.Add(new ChatParticipant() { name = CommonChatName, id = CommonChatId });
+            foreach (ClientHandler clientHandler in clients)
+            {
+                participantsList.Add(new ChatParticipant() { name = clientHandler.name, id = clientHandler.id });
+            }
+            IPEndPoint serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            ParticipantsListMessage participantsListMessage = new ParticipantsListMessage(DateTime.Now, serverIp.Address, serverIp.Port, participantsList);
+            return participantsListMessage;
+        }
+
+        private int GetClientUniqueId()
+        {
+            int clientsCount = 0;
+            foreach (ClientHandler clientHandler in clients)
+            {
+                clientsCount++;
+            }
+            return clientsCount + 1;
         }
     }
 }

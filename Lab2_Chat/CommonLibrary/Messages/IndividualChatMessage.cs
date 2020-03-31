@@ -10,11 +10,11 @@ namespace CommonLibrary
     [Serializable]
     public class IndividualChatMessage : CommonChatMessage
     {
-        public string ReceiverName { get; }
+        public int ReceiverId { get; }
 
-        public IndividualChatMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, string senderName, string receiverName) : base(dateTime, senderIp, senderPort, content, senderName)
+        public IndividualChatMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, int senderId, int receiverId) : base(dateTime, senderIp, senderPort, content, senderId)
         {
-            ReceiverName = receiverName;
+            ReceiverId = receiverId;
         }
     }
 }

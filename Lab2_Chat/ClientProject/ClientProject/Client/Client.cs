@@ -16,9 +16,9 @@ namespace ClientProject
     {
         private const string BroadcastIp = "192.168.81.255";
         private const int ServerPort = 50000;
-        private const int ClientPort = 7000;
-        private string name;
+        public int id;
         private List<ServerInfo> serversInfo;
+        public List<ChatParticipant> participants;
         private Socket tcpSocket;
         private Socket udpSocket;
         private Thread listenUdpThread;
@@ -30,6 +30,7 @@ namespace ClientProject
         {
             this.messageSerializer = messageSerializer;
             serversInfo = new List<ServerInfo>();
+            participants = new List<ChatParticipant>();
             tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             listenUdpThread = new Thread(ListenUdp);
@@ -40,7 +41,6 @@ namespace ClientProject
         {
             try
             {
-                name = clientName;
                 if ((serverIndex >= 0) && (serverIndex <= serversInfo.Count - 1))
                 {
                     ServerInfo serverInfo = GetServerInfo(serverIndex);
@@ -48,7 +48,7 @@ namespace ClientProject
                     tcpSocket.Connect(serverIp);
                     listenTcpThread.Start();
                     IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
-                    RegistrationMessage registrationMessage = new RegistrationMessage(DateTime.Now, clientIp.Address, clientIp.Port, name);
+                    RegistrationMessage registrationMessage = new RegistrationMessage(DateTime.Now, clientIp.Address, clientIp.Port, clientName);
                     SendMessage(registrationMessage);
                 }
             }
@@ -62,12 +62,48 @@ namespace ClientProject
 
         public void DisconnectFromServer()
         {
-            
+            CommonFunctions.CloseAndNullSocket(ref tcpSocket);
+            CommonFunctions.CloseAndNullThread(ref listenTcpThread);
         }
 
         private void AddNewServerInfo(ServerUdpAnswerMessage serverUdpAnswerMessage)
         {
             serversInfo.Add(new ServerInfo(serverUdpAnswerMessage.ServerName, serverUdpAnswerMessage.SenderIp, serverUdpAnswerMessage.SenderPort));
+        }
+
+        private void HandleParticipantsListMessage(ParticipantsListMessage participantsListMessage) 
+        {
+            participants = participantsListMessage.participants;
+        }
+
+        private void HandleMessagesHistoryMessage(MessagesHistoryMessage messagesHistoryMessage)
+        {
+            var participant = participants[0];
+            participant.messageHistory = messagesHistoryMessage.MessagesHistory;
+            participants[0] = participant;
+        }
+
+        private void HandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
+        {
+            int i = -1;
+            ChatParticipant participant = new ChatParticipant();
+            foreach (ChatParticipant chatParticipant in participants) 
+            {
+                i++;
+                if (chatParticipant.id == individualChatMessage.SenderId)
+                {
+                    participant = chatParticipant;
+                    if (participant.messageHistory != null)
+                        participant.messageHistory.Add(individualChatMessage);
+                    else
+                    {
+                        participant.messageHistory = new List<Message>();
+                        participant.messageHistory.Add(individualChatMessage);
+                    }
+                    break;
+                }
+            }
+            participants[i] = participant;
         }
 
         public void HandleReceivedMessage(Message message)
@@ -76,6 +112,22 @@ namespace ClientProject
             {
                 AddNewServerInfo((ServerUdpAnswerMessage)message);        
             }
+            if (message is ParticipantsListMessage)
+            {
+                HandleParticipantsListMessage((ParticipantsListMessage)message); 
+            }
+            if (message is MessagesHistoryMessage)
+            {
+                HandleMessagesHistoryMessage((MessagesHistoryMessage)message);
+            }
+            if (message is IndividualChatMessage)
+            {
+                HandleIndividualChatMessage((IndividualChatMessage)message);
+            }
+            if (message is SendIdMessage)
+            {
+                id = ((SendIdMessage)message).Id;
+            }
             ReceiveMessageEvent(message);
         }
 
@@ -83,9 +135,9 @@ namespace ClientProject
         {
             int receivedDataBytesCount;
             byte[] receivedDataBuffer;
-            while (true)
+            try
             {
-                try
+                while (true)
                 {
                     receivedDataBuffer = new byte[1024];
                     using (MemoryStream memoryStream = new MemoryStream())
@@ -99,11 +151,11 @@ namespace ClientProject
                         if (receivedDataBytesCount > 0)
                             HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
-                }
-                catch
-                {
-
-                }
+                }              
+            }
+            catch (SocketException)
+            {
+                DisconnectFromServer();
             }
         }
 
@@ -147,11 +199,44 @@ namespace ClientProject
             listenUdpThread.Start();
         }
 
-        public void SendMessage(string content)
+        public void SendMessage(string content, int selectedDialog)
         {
             IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
-            CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, name);
-            tcpSocket.Send(messageSerializer.Serialize(commonChatMessage));
+            ChatParticipant participant = participants[selectedDialog];
+            if (participant.id == 0)
+            {
+                CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id);
+                tcpSocket.Send(messageSerializer.Serialize(commonChatMessage));
+            }
+            else
+            {                  
+                IndividualChatMessage individualChatMessage = new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, participant.id);
+                if (individualChatMessage.SenderId != individualChatMessage.ReceiverId)
+                {
+                    if (participant.messageHistory != null)
+                        participant.messageHistory.Add(individualChatMessage);
+                    else
+                    {
+                        participant.messageHistory = new List<Message>();
+                        participant.messageHistory.Add(individualChatMessage);
+                    }
+                    tcpSocket.Send(messageSerializer.Serialize(individualChatMessage));
+                    participants[selectedDialog] = participant;
+                    ReceiveMessageEvent(individualChatMessage);
+                }
+                else
+                {
+                    if (participant.messageHistory != null)
+                        participant.messageHistory.Add(individualChatMessage);
+                    else
+                    {
+                        participant.messageHistory = new List<Message>();
+                        participant.messageHistory.Add(individualChatMessage);
+                    }
+                    participants[selectedDialog] = participant;
+                    ReceiveMessageEvent(individualChatMessage);
+                }
+            }
         }
 
         public void SendMessage(Message message)
@@ -172,6 +257,18 @@ namespace ClientProject
             if ((serverIndex >= 0)&&(serverIndex <= serversInfo.Count - 1))
             {
                 return serversInfo[serverIndex];
+            }
+            return null;
+        }
+
+        public string GetName(int id)
+        {
+            foreach (ChatParticipant chatParticipant in participants)
+            {
+                if (id == chatParticipant.id)
+                {
+                    return chatParticipant.name;
+                }
             }
             return null;
         }

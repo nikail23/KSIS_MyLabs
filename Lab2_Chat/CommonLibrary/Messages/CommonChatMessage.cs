@@ -12,12 +12,12 @@ namespace CommonLibrary
     {
         public string Content { get; }
 
-        public string SenderName { get; }
+        public int SenderId { get; }
 
-        public CommonChatMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, string senderName) : base(dateTime, senderIp, senderPort)
+        public CommonChatMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, int senderId) : base(dateTime, senderIp, senderPort)
         {
             Content = content;
-            SenderName = senderName;
+            SenderId = senderId;
         }
     }
 }

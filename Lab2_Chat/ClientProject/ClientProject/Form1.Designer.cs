@@ -35,7 +35,7 @@
             this.currentChatLabel = new System.Windows.Forms.Label();
             this.chatTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.listBox1 = new System.Windows.Forms.ListBox();
+            this.participantsListBox = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
             this.messageTextBox = new System.Windows.Forms.TextBox();
             this.sendMessageButton = new System.Windows.Forms.Button();
@@ -93,7 +93,6 @@
             this.chatTextBox.Location = new System.Drawing.Point(248, 47);
             this.chatTextBox.Multiline = true;
             this.chatTextBox.Name = "chatTextBox";
-            this.chatTextBox.ReadOnly = true;
             this.chatTextBox.Size = new System.Drawing.Size(380, 179);
             this.chatTextBox.TabIndex = 5;
             // 
@@ -107,13 +106,14 @@
             this.label2.TabIndex = 6;
             this.label2.Text = "Participants:";
             // 
-            // listBox1
+            // participantsListBox
             // 
-            this.listBox1.FormattingEnabled = true;
-            this.listBox1.Location = new System.Drawing.Point(153, 47);
-            this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(89, 238);
-            this.listBox1.TabIndex = 7;
+            this.participantsListBox.FormattingEnabled = true;
+            this.participantsListBox.Location = new System.Drawing.Point(153, 47);
+            this.participantsListBox.Name = "participantsListBox";
+            this.participantsListBox.Size = new System.Drawing.Size(89, 238);
+            this.participantsListBox.TabIndex = 7;
+            this.participantsListBox.SelectedIndexChanged += new System.EventHandler(this.participantsListBox_SelectedIndexChanged);
             // 
             // label3
             // 
@@ -151,7 +151,7 @@
             this.Controls.Add(this.sendMessageButton);
             this.Controls.Add(this.messageTextBox);
             this.Controls.Add(this.label3);
-            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.participantsListBox);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.chatTextBox);
             this.Controls.Add(this.currentChatLabel);
@@ -176,7 +176,7 @@
         private System.Windows.Forms.Label currentChatLabel;
         private System.Windows.Forms.TextBox chatTextBox;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.ListBox listBox1;
+        private System.Windows.Forms.ListBox participantsListBox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox messageTextBox;
         private System.Windows.Forms.Button sendMessageButton;

@@ -13,8 +13,9 @@ namespace ServerProject
 {
     public class ClientHandler
     {
-        public string Name;
-        public Socket TcpSocket;
+        public string name;
+        public Socket tcpSocket;
+        public int id;
         private Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
         public delegate void ReceiveMessageDelegate(Message message);
@@ -22,11 +23,12 @@ namespace ServerProject
         public delegate void ClientDisconnected(ClientHandler clientHandler);
         public event ClientDisconnected ClientDisconnectedEvent;
 
-        public ClientHandler(string name, Socket socket, IMessageSerializer messageSerializer)
+        public ClientHandler(string name, Socket socket, int id, IMessageSerializer messageSerializer)
         {
             this.messageSerializer = messageSerializer;
-            Name = name;
-            TcpSocket = socket;
+            this.name = name;
+            this.id = id;
+            tcpSocket = socket;
             listenTcpThread = new Thread(ListenTcp);
         }
 
@@ -48,10 +50,10 @@ namespace ServerProject
                     {
                         do
                         {
-                            receivedDataBytesCount = TcpSocket.Receive(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None);
+                            receivedDataBytesCount = tcpSocket.Receive(receivedDataBuffer, receivedDataBuffer.Length, SocketFlags.None);
                             memoryStream.Write(receivedDataBuffer, 0, receivedDataBytesCount);
                         }
-                        while (TcpSocket.Available > 0);
+                        while (tcpSocket.Available > 0);
                         if (receivedDataBytesCount > 0)
                             ReceiveMessageEvent(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
@@ -59,7 +61,7 @@ namespace ServerProject
                 catch (SocketException socketException)
                 {
                     ClientDisconnectedEvent(this);
-                    CommonFunctions.CloseAndNullSocket(ref TcpSocket);
+                    CommonFunctions.CloseAndNullSocket(ref tcpSocket);
                     CommonFunctions.CloseAndNullThread(ref listenTcpThread);            
                 }
             }
