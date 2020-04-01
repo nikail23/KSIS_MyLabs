@@ -63,7 +63,7 @@ namespace ClientProject
                 participantsListBox.Items.Clear();
                 foreach (ChatParticipant participant in participantsListMessage.participants)
                 {
-                    participantsListBox.Items.Add(participant.name);
+                    participantsListBox.Items.Add(participant.Name);
                 }
             };
             if (InvokeRequired)
@@ -83,11 +83,11 @@ namespace ClientProject
                 IndividualChatMessage individualChatMessage = (IndividualChatMessage)commonChatMessage;
                 if (client.id == individualChatMessage.ReceiverId)
                 {
-                    HandleIndividualChatMessageV1(individualChatMessage);
+                    ReceiverHandleIndividualChatMessage(individualChatMessage);
                 }
                 else if (client.id == individualChatMessage.SenderId)
                 {
-                    HandleIndividualChatMessageV2(individualChatMessage);
+                    SenderHandleIndividualChatMessage(individualChatMessage);
                 }
             }
             else if (commonChatMessage is CommonChatMessage)
@@ -104,7 +104,7 @@ namespace ClientProject
                 if ((messageHistory != null)&&(messageHistory.Count != 0))
                     foreach (Message message in messageHistory)
                     {
-                        HandleChatMessage((CommonChatMessage)message);
+                        ShowReceivedMessage(message);
                     }
             };
             if (InvokeRequired)
@@ -117,7 +117,7 @@ namespace ClientProject
             }  
         }
 
-        private void HandleIndividualChatMessageV2(IndividualChatMessage individualChatMessage)
+        private void SenderHandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
         {
             Action action = delegate
             {
@@ -137,7 +137,7 @@ namespace ClientProject
             }
         }
 
-        private void HandleIndividualChatMessageV1(IndividualChatMessage individualChatMessage)
+        private void ReceiverHandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
         {
             Action action = delegate
             {
@@ -164,23 +164,18 @@ namespace ClientProject
             {
                 AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
             }
-            if (message is ParticipantsListMessage)
+            else if (message is ParticipantsListMessage)
             {
                 RefreshParticipantsListBox((ParticipantsListMessage)message);
             }
-            if (message is MessagesHistoryMessage)
-            {
-                MessagesHistoryMessage messagesHistoryMessage = (MessagesHistoryMessage)message;
-                RefreshChatTextBox(messagesHistoryMessage.MessagesHistory);
-            }
-            if (message is IndividualChatMessage)
+            else if (message is IndividualChatMessage)
             {
                 IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
                 HandleChatMessage(individualChatMessage);
             } 
-            else if (message is CommonChatMessage)
+            else 
             {
-                AddNewCommonChatMessage((CommonChatMessage)message);
+                HandleChatMessage((CommonChatMessage)message);
             }
         }
 
@@ -218,8 +213,8 @@ namespace ClientProject
 
         private void ChangeDialog()
         {
-            currentChatLabel.Text = client.participants[selectedDialog].name;
-            List<Message> newMessages = client.participants[selectedDialog].messageHistory;
+            currentChatLabel.Text = client.participants[selectedDialog].Name;
+            List<Message> newMessages = client.participants[selectedDialog].MessageHistory;
             RefreshChatTextBox(newMessages);
         }
 

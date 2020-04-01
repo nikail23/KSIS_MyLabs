@@ -262,10 +262,10 @@ namespace ServerProject
         private ParticipantsListMessage GetParticipantsListMessage()
         {
             List<ChatParticipant> participantsList = new List<ChatParticipant>();
-            participantsList.Add(new ChatParticipant() { name = CommonChatName, id = CommonChatId });
+            participantsList.Add(new ChatParticipant(CommonChatName, CommonChatId, new List<Message>()));
             foreach (ClientHandler clientHandler in clients)
             {
-                participantsList.Add(new ChatParticipant() { name = clientHandler.name, id = clientHandler.id });
+                participantsList.Add(new ChatParticipant(clientHandler.name, clientHandler.id, new List<Message>()));
             }
             IPEndPoint serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
             ParticipantsListMessage participantsListMessage = new ParticipantsListMessage(DateTime.Now, serverIp.Address, serverIp.Port, participantsList);
