@@ -12,11 +12,25 @@ using System.Threading.Tasks;
 
 namespace ClientProject
 {
-    class Client : IClient
+    class Client 
     {
         private const string BroadcastIp = "192.168.81.255";
         private const int ServerPort = 50000;
         public int id;
+        public string name
+        {
+            get
+            {
+                foreach (ChatParticipant chatParticipant in participants)
+                {
+                    if (id == chatParticipant.Id)
+                    {
+                        return chatParticipant.Name;
+                    }
+                }
+                return null;
+            }
+        }
         private List<ServerInfo> serversInfo;
         public List<ChatParticipant> participants;
         private Socket tcpSocket;
@@ -26,6 +40,9 @@ namespace ClientProject
         private IMessageSerializer messageSerializer;
         public delegate void ReceiveMessage(Message message);
         public event ReceiveMessage ReceiveMessageEvent;
+        public event UnreadMessageDelegate UnreadMessageEvent;
+        public event ReadMessage ReadMessageEvent;
+
         public Client(IMessageSerializer messageSerializer)
         {
             this.messageSerializer = messageSerializer;
@@ -71,39 +88,38 @@ namespace ClientProject
             serversInfo.Add(new ServerInfo(serverUdpAnswerMessage.ServerName, serverUdpAnswerMessage.SenderIp, serverUdpAnswerMessage.SenderPort));
         }
 
+        private void SetEventsForParticipants()
+        {
+            foreach (ChatParticipant chatParticipant in participants)
+            {
+                chatParticipant.UnreadMessageEvent += UnreadMessageEvent;
+                chatParticipant.ReadMessageEvent += ReadMessageEvent;
+            }
+        }
+
         private void HandleParticipantsListMessage(ParticipantsListMessage participantsListMessage) 
         {
             participants = participantsListMessage.participants;
+            SetEventsForParticipants();
         }
 
         private void HandleMessagesHistoryMessage(MessagesHistoryMessage messagesHistoryMessage)
         {
-            var participant = participants[0];
-            participant.messageHistory = messagesHistoryMessage.MessagesHistory;
-            participants[0] = participant;
+            if (participants.Count != 0)
+                participants[0].MessageHistory = messagesHistoryMessage.MessagesHistory;
         }
 
         private void HandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
         {
-            int i = -1;
-            ChatParticipant participant = new ChatParticipant();
             foreach (ChatParticipant chatParticipant in participants) 
             {
-                i++;
-                if (chatParticipant.id == individualChatMessage.SenderId)
+                if (chatParticipant.Id == individualChatMessage.SenderId)
                 {
-                    participant = chatParticipant;
-                    if (participant.messageHistory != null)
-                        participant.messageHistory.Add(individualChatMessage);
-                    else
-                    {
-                        participant.messageHistory = new List<Message>();
-                        participant.messageHistory.Add(individualChatMessage);
-                    }
+                    chatParticipant.MessageHistory.Add(individualChatMessage);
+                    chatParticipant.UnreadMessagesCountIncrement();
                     break;
                 }
             }
-            participants[i] = participant;
         }
 
         public void HandleReceivedMessage(Message message)
@@ -119,6 +135,7 @@ namespace ClientProject
             if (message is MessagesHistoryMessage)
             {
                 HandleMessagesHistoryMessage((MessagesHistoryMessage)message);
+                return;
             }
             if (message is IndividualChatMessage)
             {
@@ -127,6 +144,7 @@ namespace ClientProject
             if (message is SendIdMessage)
             {
                 id = ((SendIdMessage)message).Id;
+                return;
             }
             ReceiveMessageEvent(message);
         }
@@ -203,39 +221,21 @@ namespace ClientProject
         {
             IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
             ChatParticipant participant = participants[selectedDialog];
-            if (participant.id == 0)
+            if (participant.Id == 0)
             {
                 CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id);
                 tcpSocket.Send(messageSerializer.Serialize(commonChatMessage));
             }
             else
             {                  
-                IndividualChatMessage individualChatMessage = new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, participant.id);
+                IndividualChatMessage individualChatMessage = new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, participant.Id);
                 if (individualChatMessage.SenderId != individualChatMessage.ReceiverId)
                 {
-                    if (participant.messageHistory != null)
-                        participant.messageHistory.Add(individualChatMessage);
-                    else
-                    {
-                        participant.messageHistory = new List<Message>();
-                        participant.messageHistory.Add(individualChatMessage);
-                    }
                     tcpSocket.Send(messageSerializer.Serialize(individualChatMessage));
-                    participants[selectedDialog] = participant;
-                    ReceiveMessageEvent(individualChatMessage);
                 }
-                else
-                {
-                    if (participant.messageHistory != null)
-                        participant.messageHistory.Add(individualChatMessage);
-                    else
-                    {
-                        participant.messageHistory = new List<Message>();
-                        participant.messageHistory.Add(individualChatMessage);
-                    }
-                    participants[selectedDialog] = participant;
-                    ReceiveMessageEvent(individualChatMessage);
-                }
+                participant.MessageHistory.Add(individualChatMessage);
+                participants[selectedDialog] = participant;
+                ReceiveMessageEvent(individualChatMessage);
             }
         }
 
@@ -257,18 +257,6 @@ namespace ClientProject
             if ((serverIndex >= 0)&&(serverIndex <= serversInfo.Count - 1))
             {
                 return serversInfo[serverIndex];
-            }
-            return null;
-        }
-
-        public string GetName(int id)
-        {
-            foreach (ChatParticipant chatParticipant in participants)
-            {
-                if (id == chatParticipant.id)
-                {
-                    return chatParticipant.name;
-                }
             }
             return null;
         }

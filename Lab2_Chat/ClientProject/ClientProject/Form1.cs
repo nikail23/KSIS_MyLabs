@@ -8,15 +8,73 @@ namespace ClientProject
 {
     public partial class mainForm : Form
     {
+        private const int DefaultSelectedDialog = 0;
         private Client client;
         private int selectedDialog;
 
         public mainForm()
         {
+            selectedDialog = DefaultSelectedDialog;
             InitializeComponent();
             client = new Client(new BinaryMessageSerializer());
             client.ReceiveMessageEvent += ShowReceivedMessage;
+            client.UnreadMessageEvent += UnreadMessageHandler;
+            client.ReadMessageEvent += ReadMessageHandler;
             client.SearchServers();
+        }
+
+        private void ReadMessageHandler(Message message)
+        {
+            Action action = delegate
+            {
+                if (message is IndividualChatMessage)
+                {
+                    IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
+                    if (client.id == individualChatMessage.ReceiverId)
+                    {
+                        participantsListBox.Items[individualChatMessage.SenderId] = client.participants[individualChatMessage.SenderId].Name;
+                    }
+                }
+                else if (message is CommonChatMessage)
+                {
+                    participantsListBox.Items[0] = "Common chat";
+                }
+            };
+            if (InvokeRequired)
+            {
+                Invoke(action);
+            }
+            else
+            {
+                action();
+            }
+        }
+
+        private void UnreadMessageHandler(string unreadMessageString, Message message)
+        {
+            Action action = delegate
+            {
+                if (message is IndividualChatMessage)
+                {
+                    IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
+                    if ((client.id == individualChatMessage.ReceiverId)&&(selectedDialog != individualChatMessage.SenderId))
+                    {
+                        participantsListBox.Items[individualChatMessage.SenderId] = unreadMessageString;
+                    }
+                }
+                else if (message is CommonChatMessage)
+                {
+                    participantsListBox.Items[0] = unreadMessageString;
+                }
+            };
+            if (InvokeRequired)
+            {
+                Invoke(action);
+            }
+            else
+            {
+                action();
+            }
         }
 
         private void AddServerInfoToServersListBox(ServerUdpAnswerMessage serverUdpAnswerMessage)
@@ -42,7 +100,7 @@ namespace ClientProject
             {
                 if (selectedDialog == 0)
                 {
-                    string chatContent = "[" + commonChatMessage.DateTime.ToString() + " " + commonChatMessage.SenderIp.ToString() + ":" + commonChatMessage.SenderPort + "]: \"" + client.GetName(commonChatMessage.SenderId) + "\": " + commonChatMessage.Content + "\r\n";
+                    string chatContent = "[" + commonChatMessage.DateTime.ToString() + " " + commonChatMessage.SenderIp.ToString() + ":" + commonChatMessage.SenderPort + "]: \"" + client.name + "\": " + commonChatMessage.Content + "\r\n";
                     chatTextBox.Text += chatContent;
                 }                        
             };
@@ -63,7 +121,7 @@ namespace ClientProject
                 participantsListBox.Items.Clear();
                 foreach (ChatParticipant participant in participantsListMessage.participants)
                 {
-                    participantsListBox.Items.Add(participant.name);
+                    participantsListBox.Items.Add(participant.Name);
                 }
             };
             if (InvokeRequired)
@@ -83,11 +141,11 @@ namespace ClientProject
                 IndividualChatMessage individualChatMessage = (IndividualChatMessage)commonChatMessage;
                 if (client.id == individualChatMessage.ReceiverId)
                 {
-                    HandleIndividualChatMessageV1(individualChatMessage);
+                    ReceiverHandleIndividualChatMessage(individualChatMessage);
                 }
                 else if (client.id == individualChatMessage.SenderId)
                 {
-                    HandleIndividualChatMessageV2(individualChatMessage);
+                    SenderHandleIndividualChatMessage(individualChatMessage);
                 }
             }
             else if (commonChatMessage is CommonChatMessage)
@@ -104,7 +162,7 @@ namespace ClientProject
                 if ((messageHistory != null)&&(messageHistory.Count != 0))
                     foreach (Message message in messageHistory)
                     {
-                        HandleChatMessage((CommonChatMessage)message);
+                        ShowReceivedMessage(message);
                     }
             };
             if (InvokeRequired)
@@ -117,13 +175,13 @@ namespace ClientProject
             }  
         }
 
-        private void HandleIndividualChatMessageV2(IndividualChatMessage individualChatMessage)
+        private void SenderHandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
         {
             Action action = delegate
             {
                 if (individualChatMessage.ReceiverId == selectedDialog)
                 {
-                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.GetName(individualChatMessage.SenderId) + "\": " + individualChatMessage.Content + "\r\n";
+                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.name + "\": " + individualChatMessage.Content + "\r\n";
                     chatTextBox.Text += chatContent;
                 }
             };
@@ -137,13 +195,13 @@ namespace ClientProject
             }
         }
 
-        private void HandleIndividualChatMessageV1(IndividualChatMessage individualChatMessage)
+        private void ReceiverHandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
         {
             Action action = delegate
             {
                 if (individualChatMessage.SenderId == selectedDialog)
                 {
-                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.GetName(individualChatMessage.SenderId) + "\": " + individualChatMessage.Content + "\r\n";
+                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.name + "\": " + individualChatMessage.Content + "\r\n";
                     chatTextBox.Text += chatContent;
                 }
             };
@@ -159,29 +217,19 @@ namespace ClientProject
 
         public void ShowReceivedMessage(Message message)
         {
-
             if (message is ServerUdpAnswerMessage)
             {
                 AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
             }
-            if (message is ParticipantsListMessage)
+            else if (message is ParticipantsListMessage)
             {
                 RefreshParticipantsListBox((ParticipantsListMessage)message);
             }
-            if (message is MessagesHistoryMessage)
-            {
-                MessagesHistoryMessage messagesHistoryMessage = (MessagesHistoryMessage)message;
-                RefreshChatTextBox(messagesHistoryMessage.MessagesHistory);
-            }
-            if (message is IndividualChatMessage)
-            {
-                IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
-                HandleChatMessage(individualChatMessage);
-            } 
             else if (message is CommonChatMessage)
             {
-                AddNewCommonChatMessage((CommonChatMessage)message);
-            }
+                CommonChatMessage commonChatMessage = (CommonChatMessage)message;
+                HandleChatMessage(commonChatMessage);
+            } 
         }
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -216,17 +264,32 @@ namespace ClientProject
             messageTextBox.Clear();
         }
 
+        private bool UnreadMessageCheck(ChatParticipant chatParticipant)
+        {
+            if (chatParticipant.GetUnreadMessagesCount() != 0)
+                return true;
+            return false;
+        }
+
         private void ChangeDialog()
         {
-            currentChatLabel.Text = client.participants[selectedDialog].name;
-            List<Message> newMessages = client.participants[selectedDialog].messageHistory;
+            ChatParticipant chatParticipant = client.participants[selectedDialog];
+            if (UnreadMessageCheck(chatParticipant))
+            {
+                chatParticipant.SetUnreadMessageCountZero();
+            }
+            currentChatLabel.Text = client.participants[selectedDialog].Name;
+            List<Message> newMessages = client.participants[selectedDialog].MessageHistory;
             RefreshChatTextBox(newMessages);
         }
 
         private void participantsListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            selectedDialog = participantsListBox.SelectedIndex;
-            ChangeDialog();
+            if ((participantsListBox.SelectedIndex != selectedDialog)&&(participantsListBox.SelectedIndex >= 0))
+            {
+                selectedDialog = participantsListBox.SelectedIndex;
+                ChangeDialog();
+            }
         }
     }
 }

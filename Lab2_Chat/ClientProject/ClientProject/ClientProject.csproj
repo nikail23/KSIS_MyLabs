@@ -47,7 +47,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\Client.cs" />
-    <Compile Include="Client\IClient.cs" />
     <Compile Include="Client\ServerInfo.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>

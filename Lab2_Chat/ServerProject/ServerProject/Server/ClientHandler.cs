@@ -58,7 +58,7 @@ namespace ServerProject
                             ReceiveMessageEvent(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
                 }
-                catch (SocketException socketException)
+                catch (SocketException)
                 {
                     ClientDisconnectedEvent(this);
                     CommonFunctions.CloseAndNullSocket(ref tcpSocket);
