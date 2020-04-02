@@ -116,10 +116,17 @@ namespace ClientProject
                 if (chatParticipant.Id == individualChatMessage.SenderId)
                 {
                     chatParticipant.MessageHistory.Add(individualChatMessage);
+<<<<<<< HEAD
                     chatParticipant.UnreadMessagesCountIncrement();
                     break;
                 }
             }
+=======
+                    break;
+                }
+            }
+
+>>>>>>> b61bdcec28773017d25d42a0f891ddc287a7600e
         }
 
         public void HandleReceivedMessage(Message message)
@@ -231,7 +238,20 @@ namespace ClientProject
                 IndividualChatMessage individualChatMessage = new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, participant.Id);
                 if (individualChatMessage.SenderId != individualChatMessage.ReceiverId)
                 {
+<<<<<<< HEAD
                     tcpSocket.Send(messageSerializer.Serialize(individualChatMessage));
+=======
+                    participant.MessageHistory.Add(individualChatMessage);
+                    tcpSocket.Send(messageSerializer.Serialize(individualChatMessage));
+                    participants[selectedDialog] = participant;
+                    ReceiveMessageEvent(individualChatMessage);
+                }
+                else
+                {
+                    participant.MessageHistory.Add(individualChatMessage);
+                    participants[selectedDialog] = participant;
+                    ReceiveMessageEvent(individualChatMessage);
+>>>>>>> b61bdcec28773017d25d42a0f891ddc287a7600e
                 }
                 participant.MessageHistory.Add(individualChatMessage);
                 participants[selectedDialog] = participant;
@@ -260,5 +280,20 @@ namespace ClientProject
             }
             return null;
         }
+<<<<<<< HEAD
+=======
+
+        public string GetName(int id)
+        {
+            foreach (ChatParticipant chatParticipant in participants)
+            {
+                if (id == chatParticipant.Id)
+                {
+                    return chatParticipant.Name;
+                }
+            }
+            return null;
+        }
+>>>>>>> b61bdcec28773017d25d42a0f891ddc287a7600e
     }
 }
