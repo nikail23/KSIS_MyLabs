@@ -12,9 +12,10 @@ using System.Threading.Tasks;
 
 namespace ClientProject
 {
+    public delegate void ReceiveMessage(Message message);
+
     class Client 
     {
-        private const string BroadcastIp = "192.168.81.255";
         private const int ServerPort = 50000;
         public int id;
         public string name
@@ -38,7 +39,6 @@ namespace ClientProject
         private Thread listenUdpThread;
         private Thread listenTcpThread;
         private IMessageSerializer messageSerializer;
-        public delegate void ReceiveMessage(Message message);
         public event ReceiveMessage ReceiveMessageEvent;
         public event UnreadMessageDelegate UnreadMessageEvent;
         public event ReadMessage ReadMessageEvent;
@@ -50,6 +50,7 @@ namespace ClientProject
             participants = new List<ChatParticipant>();
             tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            udpSocket.EnableBroadcast = true;
             listenUdpThread = new Thread(ListenUdp);
             listenTcpThread = new Thread(ListenTcp);
         }
@@ -60,21 +61,16 @@ namespace ClientProject
             {
                 if ((serverIndex >= 0) && (serverIndex <= serversInfo.Count - 1))
                 {
-                    ServerInfo serverInfo = GetServerInfo(serverIndex);
-                    IPEndPoint serverIp = new IPEndPoint(serverInfo.ServerIp, serverInfo.ServerPort);
-                    tcpSocket.Connect(serverIp);
-                    listenTcpThread.Start();
-                    IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
-                    RegistrationMessage registrationMessage = new RegistrationMessage(DateTime.Now, clientIp.Address, clientIp.Port, clientName);
-                    SendMessage(registrationMessage);
+                    tcpSocket.Connect(GetServerIpEndPoint(serverIndex));
+                    listenTcpThread.Start();                   
+                    SendMessage(GetRegistrationMessage(clientName));
                 }
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 Close();
-            }
-                 
+            }                
         }
 
         public void DisconnectFromServer()
@@ -200,41 +196,38 @@ namespace ClientProject
                             HandleReceivedMessage(messageSerializer.Deserialize(memoryStream.ToArray()));
                     }
                 }
-                catch
+                catch (SocketException)
                 {
-                    
+                    Close();
                 }
             }
         }
 
         public void SearchServers()
         {
-            udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0)); 
-            IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Parse(BroadcastIp), ServerPort);  
+            IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Broadcast, ServerPort);
+            IPEndPoint localIp = new IPEndPoint(IPAddress.Any, 0);
+            udpSocket.Bind(localIp);
             Socket sendUdpRequest = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            IPEndPoint localIp = (IPEndPoint)udpSocket.LocalEndPoint;
-            sendUdpRequest.SendTo(messageSerializer.Serialize(new ClientUdpRequestMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), localIp.Port)), broadcastEndPoint);
+            sendUdpRequest.EnableBroadcast = true;
+            sendUdpRequest.SendTo(messageSerializer.Serialize(GetClientUdpRequestMessage()), broadcastEndPoint);
             listenUdpThread.Start();
         }
 
         public void SendMessage(string content, int selectedDialog)
         {
-            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
-            ChatParticipant participant = participants[selectedDialog];
-            if (participant.Id == 0)
-            {
-                CommonChatMessage commonChatMessage = new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id);
-                tcpSocket.Send(messageSerializer.Serialize(commonChatMessage));
+            if (participants[selectedDialog].Id == 0)
+            {        
+                tcpSocket.Send(messageSerializer.Serialize(GetCommonChatMessage(content)));
             }
             else
-            {                  
-                IndividualChatMessage individualChatMessage = new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, participant.Id);
+            {
+                IndividualChatMessage individualChatMessage = GetIndividualChatMessage(content, participants[selectedDialog].Id);
                 if (individualChatMessage.SenderId != individualChatMessage.ReceiverId)
                 {
                     tcpSocket.Send(messageSerializer.Serialize(individualChatMessage));
                 }
-                participant.MessageHistory.Add(individualChatMessage);
-                participants[selectedDialog] = participant;
+                participants[selectedDialog].MessageHistory.Add(individualChatMessage);
                 ReceiveMessageEvent(individualChatMessage);
             }
         }
@@ -250,6 +243,36 @@ namespace ClientProject
             CommonFunctions.CloseAndNullSocket(ref udpSocket);
             CommonFunctions.CloseAndNullThread(ref listenTcpThread);
             CommonFunctions.CloseAndNullThread(ref listenUdpThread);
+        }
+
+        private IndividualChatMessage GetIndividualChatMessage(string content, int receiverId)
+        {
+            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            return new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, receiverId);
+        }
+
+        private CommonChatMessage GetCommonChatMessage(string content)
+        {
+            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            return new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id);
+        }
+
+        private ClientUdpRequestMessage GetClientUdpRequestMessage()
+        {
+            IPEndPoint localIp = (IPEndPoint)udpSocket.LocalEndPoint;
+            return new ClientUdpRequestMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), localIp.Port);
+        }
+
+        private IPEndPoint GetServerIpEndPoint(int serverIndex)
+        {
+            ServerInfo serverInfo = GetServerInfo(serverIndex);
+            return new IPEndPoint(serverInfo.ServerIp, serverInfo.ServerPort);
+        }
+
+        private RegistrationMessage GetRegistrationMessage(string clientName)
+        {
+            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            return new RegistrationMessage(DateTime.Now, clientIp.Address, clientIp.Port, clientName);
         }
 
         private ServerInfo GetServerInfo(int serverIndex)

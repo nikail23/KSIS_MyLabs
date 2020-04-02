@@ -9,6 +9,8 @@ namespace ClientProject
     public partial class mainForm : Form
     {
         private const int DefaultSelectedDialog = 0;
+        private const string CommonChatName = "Common chat";
+        private const int CommonChatId = 0;
         private Client client;
         private int selectedDialog;
 
@@ -37,7 +39,7 @@ namespace ClientProject
                 }
                 else if (message is CommonChatMessage)
                 {
-                    participantsListBox.Items[0] = "Common chat";
+                    participantsListBox.Items[CommonChatId] = CommonChatName;
                 }
             };
             if (InvokeRequired)
@@ -54,6 +56,7 @@ namespace ClientProject
         {
             Action action = delegate
             {
+
                 if (message is IndividualChatMessage)
                 {
                     IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
@@ -62,9 +65,9 @@ namespace ClientProject
                         participantsListBox.Items[individualChatMessage.SenderId] = unreadMessageString;
                     }
                 }
-                else if (message is CommonChatMessage)
+                else if ((message is CommonChatMessage)&&(selectedDialog != CommonChatId))
                 {
-                    participantsListBox.Items[0] = unreadMessageString;
+                    participantsListBox.Items[CommonChatId] = unreadMessageString;
                 }
             };
             if (InvokeRequired)

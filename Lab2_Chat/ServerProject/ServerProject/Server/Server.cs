@@ -33,18 +33,8 @@ namespace ServerProject
             listenTcpThread = new Thread(ListenTcp);
         }
 
-        public void AddConnection()
-        {
-
-        }
-
         public void Close()
         {
-            messageSerializer = null;
-            messageHistory.Clear();
-            messageHistory = null;
-            clients.Clear();
-            clients = null;
             CommonFunctions.CloseAndNullSocket(ref tcpSocket);
             CommonFunctions.CloseAndNullSocket(ref udpSocket);
             CommonFunctions.CloseAndNullThread(ref listenTcpThread);
@@ -114,6 +104,7 @@ namespace ServerProject
         private bool SetupUdpAndTcpLocalIp()
         {
             udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            udpSocket.EnableBroadcast = true;
             tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             IPEndPoint localUdpIp = new IPEndPoint(IPAddress.Any, ServerPort);
             IPEndPoint localTcpIp = new IPEndPoint(CommonFunctions.GetCurrrentHostIp(), ServerPort);
@@ -148,7 +139,6 @@ namespace ServerProject
             if (clients.Remove(disconnectedClient))
                 WriteLine("\"" + disconnectedClient.name + "\"" + " left from the chat!");
             SendMessageToAllClients(GetParticipantsListMessage());
-            SendMessageToAllClients(GetMessagesHistoryMessage());
         }
 
         public void SendMessageToAllClients(Message message)
@@ -166,21 +156,26 @@ namespace ServerProject
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
         {
-            ServerUdpAnswerMessage serverUdpAnswerMessage = new ServerUdpAnswerMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ServerPort, name);
+            ServerUdpAnswerMessage serverUdpAnswerMessage = GetServerUdpAnswerMessage();
             IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.SenderIp, clientUdpRequestMessage.SenderPort);
             Socket serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             serverUdpAnswerSocket.SendTo(messageSerializer.Serialize(serverUdpAnswerMessage), clientEndPoint);
         }
 
-        private void HandleRegistrationMessage(RegistrationMessage registrationMessage, Socket connectedSocket)
+        private ClientHandler GetClientHandler(RegistrationMessage registrationMessage, Socket connectedSocket)
         {
             ClientHandler clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, GetClientUniqueId(), messageSerializer);
             clientHandler.ReceiveMessageEvent += HandleReceivedMessage;
             clientHandler.ClientDisconnectedEvent += RemoveConnection;
             clients.Add(clientHandler);
             clientHandler.StartListenTcp();
-            IPEndPoint serverIp = (IPEndPoint)tcpSocket.LocalEndPoint;
-            SendMessageToClient(new SendIdMessage(DateTime.Now, serverIp.Address, serverIp.Port, clientHandler.id), clientHandler);
+            return clientHandler;
+        }
+
+        private void HandleRegistrationMessage(RegistrationMessage registrationMessage, Socket connectedSocket)
+        {
+            ClientHandler clientHandler = GetClientHandler(registrationMessage, connectedSocket);
+            SendMessageToClient(GetSendIdMessage(clientHandler), clientHandler);
             SendMessageToAllClients(GetParticipantsListMessage());
             SendMessageToAllClients(GetMessagesHistoryMessage());
         }
@@ -208,10 +203,8 @@ namespace ServerProject
         {
             if (message is ClientUdpRequestMessage)
             {
-                ClientUdpRequestMessage clientUdpRequestMessage = (ClientUdpRequestMessage)message;
-                WriteLine("Received a broadcast UDP request for connection info from " + clientUdpRequestMessage.SenderIp.ToString() + ":" + clientUdpRequestMessage.SenderPort);
-                HandleClientUdpRequestMessage(clientUdpRequestMessage);
-                WriteLine("Send UDP answer with server connection info to " + clientUdpRequestMessage.SenderIp.ToString() + ":" + clientUdpRequestMessage.SenderPort);
+                ClientUdpRequestMessage clientUdpRequestMessage = (ClientUdpRequestMessage)message;               
+                HandleClientUdpRequestMessage(clientUdpRequestMessage);              
             }
             if (message is IndividualChatMessage)
             {
@@ -221,8 +214,8 @@ namespace ServerProject
             else if (message is CommonChatMessage)
             {
                 CommonChatMessage commonChatMessage = (CommonChatMessage)message;
-                WriteLine("\"" + GetName(commonChatMessage.SenderId) + "\": " + commonChatMessage.Content);  // сделать name в client ( так в 100000 раз удобнее )
-                HandleCommonChatMessage(commonChatMessage);            // пофиксить прием сообщений и вывод на клиенте, до сервака норм доходит
+                WriteLine("\"" + GetName(commonChatMessage.SenderId) + "\": " + commonChatMessage.Content);  
+                HandleCommonChatMessage(commonChatMessage);            
             }
         }
 
@@ -236,11 +229,6 @@ namespace ServerProject
             }
         }
 
-        private void WriteLine(string content)
-        {
-            Console.WriteLine("[" + DateTime.Now.ToString() + "]: " + content + ";");
-        }
-
         private string GetName(int id)
         {
             foreach (ClientHandler clientHandler in clients)
@@ -251,6 +239,22 @@ namespace ServerProject
                 }
             }
             return null;
+        }
+
+        private void WriteLine(string content)
+        {
+            Console.WriteLine("[" + DateTime.Now.ToString() + "]: " + content + ";");
+        }
+
+        private ServerUdpAnswerMessage GetServerUdpAnswerMessage() 
+        {
+            return new ServerUdpAnswerMessage(DateTime.Now, CommonFunctions.GetCurrrentHostIp(), ServerPort, name);
+        }
+
+        private SendIdMessage GetSendIdMessage(ClientHandler clientHandler)
+        {
+            IPEndPoint serverIp = (IPEndPoint)tcpSocket.LocalEndPoint;
+            return new SendIdMessage(DateTime.Now, serverIp.Address, serverIp.Port, clientHandler.id);
         }
 
         private MessagesHistoryMessage GetMessagesHistoryMessage()
@@ -280,6 +284,11 @@ namespace ServerProject
                 clientsCount++;
             }
             return clientsCount + 1;
+        }
+
+        ~Server()
+        {
+            Close();
         }
     }
 }
