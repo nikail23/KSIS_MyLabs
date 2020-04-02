@@ -100,7 +100,7 @@ namespace ClientProject
             {
                 if (selectedDialog == 0)
                 {
-                    string chatContent = "[" + commonChatMessage.DateTime.ToString() + " " + commonChatMessage.SenderIp.ToString() + ":" + commonChatMessage.SenderPort + "]: \"" + client.name + "\": " + commonChatMessage.Content + "\r\n";
+                    string chatContent = "[" + commonChatMessage.DateTime.ToString() + " " + commonChatMessage.SenderIp.ToString() + ":" + commonChatMessage.SenderPort + "]: \"" + client.participants[commonChatMessage.SenderId].Name + "\": " + commonChatMessage.Content + "\r\n";
                     chatTextBox.Text += chatContent;
                 }                        
             };
@@ -181,7 +181,7 @@ namespace ClientProject
             {
                 if (individualChatMessage.ReceiverId == selectedDialog)
                 {
-                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.name + "\": " + individualChatMessage.Content + "\r\n";
+                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.participants[individualChatMessage.SenderId].Name + "\": " + individualChatMessage.Content + "\r\n";
                     chatTextBox.Text += chatContent;
                 }
             };
@@ -201,7 +201,7 @@ namespace ClientProject
             {
                 if (individualChatMessage.SenderId == selectedDialog)
                 {
-                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.name + "\": " + individualChatMessage.Content + "\r\n";
+                    string chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.participants[individualChatMessage.SenderId].Name + "\": " + individualChatMessage.Content + "\r\n";
                     chatTextBox.Text += chatContent;
                 }
             };
