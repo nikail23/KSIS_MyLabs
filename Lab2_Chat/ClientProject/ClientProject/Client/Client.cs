@@ -41,7 +41,7 @@ namespace ClientProject
         private IMessageSerializer messageSerializer;
         public event ReceiveMessage ReceiveMessageEvent;
         public event UnreadMessageDelegate UnreadMessageEvent;
-        public event ReadMessage ReadMessageEvent;
+        public event ReadMessageDelegate ReadMessageEvent;
 
         public Client(IMessageSerializer messageSerializer)
         {
@@ -105,17 +105,25 @@ namespace ClientProject
                 participants[0].MessageHistory = messagesHistoryMessage.MessagesHistory;
         }
 
-        private void HandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
+        private void HandleChatMessage(CommonChatMessage commonChatMessage)
         {
-            foreach (ChatParticipant chatParticipant in participants) 
+            if (commonChatMessage is IndividualChatMessage)
             {
-                if (chatParticipant.Id == individualChatMessage.SenderId)
+                IndividualChatMessage individualChatMessage = (IndividualChatMessage)commonChatMessage;
+                foreach (ChatParticipant chatParticipant in participants)
                 {
-                    chatParticipant.MessageHistory.Add(individualChatMessage);
-                    chatParticipant.UnreadMessagesCountIncrement();
-                    break;
+                    if (chatParticipant.Id == individualChatMessage.SenderId)
+                    {
+                        chatParticipant.MessageHistory.Add(individualChatMessage);
+                        chatParticipant.UnreadMessagesCountIncrement(individualChatMessage);
+                        break;
+                    }
                 }
             }
+            else
+            {
+                participants[0].UnreadMessagesCountIncrement(commonChatMessage);
+            }      
         }
 
         public void HandleReceivedMessage(Message message)
@@ -133,9 +141,9 @@ namespace ClientProject
                 HandleMessagesHistoryMessage((MessagesHistoryMessage)message);
                 return;
             }
-            if (message is IndividualChatMessage)
+            if ((message is IndividualChatMessage)||(message is CommonChatMessage))
             {
-                HandleIndividualChatMessage((IndividualChatMessage)message);
+                HandleChatMessage((CommonChatMessage)message);
             }
             if (message is SendIdMessage)
             {

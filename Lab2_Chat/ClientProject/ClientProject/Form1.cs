@@ -56,7 +56,6 @@ namespace ClientProject
         {
             Action action = delegate
             {
-
                 if (message is IndividualChatMessage)
                 {
                     IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;

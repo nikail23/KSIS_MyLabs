@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace CommonLibrary
 {
     public delegate void UnreadMessageDelegate(string unreadMessageString, Message message);
-    public delegate void ReadMessage(Message message);
+    public delegate void ReadMessageDelegate(Message message);
 
     [Serializable]
     public class ChatParticipant
@@ -25,7 +25,7 @@ namespace CommonLibrary
         }
         private int UnreadMessagesCount;
         public event UnreadMessageDelegate UnreadMessageEvent;
-        public event ReadMessage ReadMessageEvent;
+        public event ReadMessageDelegate ReadMessageEvent;
 
         public ChatParticipant(string name, int id, List<Message> messageHistory)
         {
@@ -46,10 +46,10 @@ namespace CommonLibrary
             ReadMessageEvent(MessageHistory[MessageHistory.Count - 1]);
         }
 
-        public void UnreadMessagesCountIncrement()
+        public void UnreadMessagesCountIncrement(CommonChatMessage commonChatMessage)
         {
             UnreadMessagesCount++;
-            UnreadMessageEvent(UnreadMessageString, MessageHistory[MessageHistory.Count - 1]);
+            UnreadMessageEvent(UnreadMessageString, commonChatMessage);
         }
     }
 }
