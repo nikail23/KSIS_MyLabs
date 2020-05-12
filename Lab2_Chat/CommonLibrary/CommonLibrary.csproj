@@ -43,7 +43,9 @@
   <ItemGroup>
     <Compile Include="ChatParticipant.cs" />
     <Compile Include="Messages\ClientUdpRequestMessage.cs" />
+    <Compile Include="Messages\FileCommonMessage.cs" />
     <Compile Include="Messages\CommonChatMessage.cs" />
+    <Compile Include="Messages\FileIndividualMessage.cs" />
     <Compile Include="Messages\IndividualChatMessage.cs" />
     <Compile Include="Messages\Message.cs" />
     <Compile Include="Messages\MessagesHistoryMessage.cs" />

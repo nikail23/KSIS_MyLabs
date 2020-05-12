@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Copyright>Ilya Yermolovich</Copyright>
+    <Description>FileSharingLibrary develop as dlc for my Chat. It add probability to share files between participants.</Description>
+  </PropertyGroup>
+
+</Project>

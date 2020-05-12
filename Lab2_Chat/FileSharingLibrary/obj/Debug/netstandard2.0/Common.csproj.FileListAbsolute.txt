@@ -1,0 +1,16 @@
+C:\Users\asus\Desktop\FileManager\Common\bin\Debug\netstandard2.0\Common.deps.json
+C:\Users\asus\Desktop\FileManager\Common\bin\Debug\netstandard2.0\Common.dll
+C:\Users\asus\Desktop\FileManager\Common\bin\Debug\netstandard2.0\Common.pdb
+C:\Users\asus\Desktop\FileManager\Common\obj\Debug\netstandard2.0\Common.csprojAssemblyReference.cache
+C:\Users\asus\Desktop\FileManager\Common\obj\Debug\netstandard2.0\Common.AssemblyInfoInputs.cache
+C:\Users\asus\Desktop\FileManager\Common\obj\Debug\netstandard2.0\Common.AssemblyInfo.cs
+C:\Users\asus\Desktop\FileManager\Common\obj\Debug\netstandard2.0\Common.dll
+C:\Users\asus\Desktop\FileManager\Common\obj\Debug\netstandard2.0\Common.pdb
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\bin\Debug\netstandard2.0\Common.deps.json
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\bin\Debug\netstandard2.0\Common.dll
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\bin\Debug\netstandard2.0\Common.pdb
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\obj\Debug\netstandard2.0\Common.csprojAssemblyReference.cache
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\obj\Debug\netstandard2.0\Common.AssemblyInfoInputs.cache
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\obj\Debug\netstandard2.0\Common.AssemblyInfo.cs
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\obj\Debug\netstandard2.0\Common.dll
+C:\Users\asus\Desktop\FileSharing-for-Chat\FileManager\Common\obj\Debug\netstandard2.0\Common.pdb

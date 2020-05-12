@@ -56,6 +56,10 @@
       <Project>{2ec1635e-8d88-4174-8076-745a3f96618d}</Project>
       <Name>CommonLibrary</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\FileSharingLibrary\FileSharingLibrary.csproj">
+      <Project>{25814DB0-5D76-4F45-81DB-DC5BC650DE9C}</Project>
+      <Name>FileSharingLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

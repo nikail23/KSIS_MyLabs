@@ -1,4 +1,5 @@
 ﻿using CommonLibrary;
+using FileSharingLibrary;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,16 +10,14 @@ namespace ServerProject
 {
     class Program
     {
+        private const string FileSharingServerUrl = "http://localhost:8888/";
+
         static void Main(string[] args)
         {
             Server server = new Server(new BinaryMessageSerializer());
+            FileSharingServer fileSharingServer = new FileSharingServer(FileSharingServerUrl);
             server.Start();
-            //while (true)
-            //{
-            //    string serverCommand = Console.ReadLine();
-            //    if (serverCommand == "stop")
-            //        server.Close();
-            //}
+            fileSharingServer.Start();
         }
     }
 }

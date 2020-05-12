@@ -22,3 +22,5 @@ C:\Users\asus\Desktop\KSIS_MyLabs - копия (3)\Lab2_Chat\ClientProject\Clien
 C:\Users\asus\Desktop\KSIS_MyLabs - копия (3)\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.csproj.CopyComplete
 C:\Users\asus\Desktop\KSIS_MyLabs - копия (3)\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.exe
 C:\Users\asus\Desktop\KSIS_MyLabs - копия (3)\Lab2_Chat\ClientProject\ClientProject\obj\Debug\ClientProject.pdb
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ClientProject\ClientProject\bin\Debug\FileSharingLibrary.dll
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\ClientProject\ClientProject\bin\Debug\FileSharingLibrary.pdb

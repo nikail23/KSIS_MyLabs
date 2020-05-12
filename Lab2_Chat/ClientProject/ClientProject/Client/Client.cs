@@ -55,7 +55,7 @@ namespace ClientProject
             listenTcpThread = new Thread(ListenTcp);
         }
 
-        public void ConnectToServer(int serverIndex, string clientName)
+        public bool ConnectToServer(int serverIndex, string clientName)
         {
             try
             {
@@ -65,11 +65,13 @@ namespace ClientProject
                     listenTcpThread.Start();                   
                     SendMessage(GetRegistrationMessage(clientName));
                 }
+                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
                 Close();
+                return false;
             }                
         }
 
@@ -240,6 +242,24 @@ namespace ClientProject
             }
         }
 
+        public void SendFileMessage(string content, int selectedDialog, List<string> filesList)
+        {
+            if (participants[selectedDialog].Id == 0)
+            {
+                tcpSocket.Send(messageSerializer.Serialize(GetFileCommonMessage(content, filesList)));
+            }
+            else
+            {
+                FileIndividualMessage fileIndividualMessage = GetFileIndividualMessage(content, participants[selectedDialog].Id, filesList);
+                if (fileIndividualMessage.SenderId != fileIndividualMessage.ReceiverId)
+                {
+                    tcpSocket.Send(messageSerializer.Serialize(fileIndividualMessage));
+                }
+                participants[selectedDialog].MessageHistory.Add(fileIndividualMessage);
+                ReceiveMessageEvent(fileIndividualMessage);
+            }
+        }
+
         public void SendMessage(Message message)
         {
             tcpSocket.Send(messageSerializer.Serialize(message));
@@ -259,10 +279,22 @@ namespace ClientProject
             return new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, receiverId);
         }
 
+        private FileIndividualMessage GetFileIndividualMessage(string content, int receiverId, List<string> files)
+        {
+            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            return new FileIndividualMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, receiverId, files);
+        }
+
         private CommonChatMessage GetCommonChatMessage(string content)
         {
             IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
             return new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id);
+        }
+
+        private FileCommonMessage GetFileCommonMessage(string content, List<string> files)
+        {
+            IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            return new FileCommonMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, files);
         }
 
         private ClientUdpRequestMessage GetClientUdpRequestMessage()
