@@ -7,11 +7,11 @@ namespace CommonLibrary
     [Serializable]
     public class FileCommonMessage : CommonChatMessage
     {
-        public List<string> FileNames { get; }
+        public Dictionary<int, string> Files { get; }
 
-        public FileCommonMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, int senderId, List<string> fileNames) : base(dateTime, senderIp, senderPort, content, senderId)
+        public FileCommonMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, int senderId, Dictionary<int, string> files) : base(dateTime, senderIp, senderPort, content, senderId)
         {
-            FileNames = fileNames;
+            Files = files;
         }
     }
 }

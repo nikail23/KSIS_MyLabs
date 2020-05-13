@@ -40,10 +40,11 @@
             this.MessageTextBox = new System.Windows.Forms.TextBox();
             this.SendMessageButton = new System.Windows.Forms.Button();
             this.DeleteFileButton = new System.Windows.Forms.Button();
-            this.FilesInfoListBox = new System.Windows.Forms.ListBox();
+            this.FilesTempListBox = new System.Windows.Forms.ListBox();
             this.AddFileButton = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.DownloadFileButton = new System.Windows.Forms.Button();
+            this.FilesListBox = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // ServersListBox
@@ -132,18 +133,18 @@
             // 
             // MessageTextBox
             // 
-            this.MessageTextBox.Location = new System.Drawing.Point(354, 236);
+            this.MessageTextBox.Location = new System.Drawing.Point(482, 222);
             this.MessageTextBox.Name = "MessageTextBox";
-            this.MessageTextBox.Size = new System.Drawing.Size(274, 20);
+            this.MessageTextBox.Size = new System.Drawing.Size(146, 20);
             this.MessageTextBox.TabIndex = 9;
             // 
             // SendMessageButton
             // 
             this.SendMessageButton.Enabled = false;
             this.SendMessageButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SendMessageButton.Location = new System.Drawing.Point(354, 262);
+            this.SendMessageButton.Location = new System.Drawing.Point(483, 241);
             this.SendMessageButton.Name = "SendMessageButton";
-            this.SendMessageButton.Size = new System.Drawing.Size(274, 32);
+            this.SendMessageButton.Size = new System.Drawing.Size(146, 32);
             this.SendMessageButton.TabIndex = 10;
             this.SendMessageButton.Text = "Send";
             this.SendMessageButton.UseVisualStyleBackColor = true;
@@ -153,7 +154,7 @@
             // 
             this.DeleteFileButton.Enabled = false;
             this.DeleteFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DeleteFileButton.Location = new System.Drawing.Point(206, 198);
+            this.DeleteFileButton.Location = new System.Drawing.Point(354, 263);
             this.DeleteFileButton.Name = "DeleteFileButton";
             this.DeleteFileButton.Size = new System.Drawing.Size(128, 24);
             this.DeleteFileButton.TabIndex = 11;
@@ -161,19 +162,23 @@
             this.DeleteFileButton.UseVisualStyleBackColor = true;
             this.DeleteFileButton.Click += new System.EventHandler(this.DeleteFileButton_Click);
             // 
-            // FilesInfoListBox
+            // FilesTempListBox
             // 
-            this.FilesInfoListBox.FormattingEnabled = true;
-            this.FilesInfoListBox.Location = new System.Drawing.Point(206, 48);
-            this.FilesInfoListBox.Name = "FilesInfoListBox";
-            this.FilesInfoListBox.Size = new System.Drawing.Size(128, 108);
-            this.FilesInfoListBox.TabIndex = 12;
+            this.FilesTempListBox.AllowDrop = true;
+            this.FilesTempListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FilesTempListBox.FormattingEnabled = true;
+            this.FilesTempListBox.ItemHeight = 15;
+            this.FilesTempListBox.Location = new System.Drawing.Point(354, 222);
+            this.FilesTempListBox.Name = "FilesTempListBox";
+            this.FilesTempListBox.ScrollAlwaysVisible = true;
+            this.FilesTempListBox.Size = new System.Drawing.Size(128, 19);
+            this.FilesTempListBox.TabIndex = 12;
             // 
             // AddFileButton
             // 
             this.AddFileButton.Enabled = false;
             this.AddFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AddFileButton.Location = new System.Drawing.Point(206, 155);
+            this.AddFileButton.Location = new System.Drawing.Point(354, 241);
             this.AddFileButton.Name = "AddFileButton";
             this.AddFileButton.Size = new System.Drawing.Size(128, 24);
             this.AddFileButton.TabIndex = 13;
@@ -195,7 +200,7 @@
             // 
             this.DownloadFileButton.Enabled = false;
             this.DownloadFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DownloadFileButton.Location = new System.Drawing.Point(206, 177);
+            this.DownloadFileButton.Location = new System.Drawing.Point(206, 262);
             this.DownloadFileButton.Name = "DownloadFileButton";
             this.DownloadFileButton.Size = new System.Drawing.Size(128, 24);
             this.DownloadFileButton.TabIndex = 16;
@@ -203,15 +208,24 @@
             this.DownloadFileButton.UseVisualStyleBackColor = true;
             this.DownloadFileButton.Click += new System.EventHandler(this.DownloadFileButton_Click);
             // 
+            // FilesListBox
+            // 
+            this.FilesListBox.FormattingEnabled = true;
+            this.FilesListBox.Location = new System.Drawing.Point(206, 48);
+            this.FilesListBox.Name = "FilesListBox";
+            this.FilesListBox.Size = new System.Drawing.Size(128, 212);
+            this.FilesListBox.TabIndex = 17;
+            // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 298);
+            this.Controls.Add(this.FilesListBox);
             this.Controls.Add(this.DownloadFileButton);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.AddFileButton);
-            this.Controls.Add(this.FilesInfoListBox);
+            this.Controls.Add(this.FilesTempListBox);
             this.Controls.Add(this.DeleteFileButton);
             this.Controls.Add(this.SendMessageButton);
             this.Controls.Add(this.MessageTextBox);
@@ -246,10 +260,11 @@
         private System.Windows.Forms.TextBox MessageTextBox;
         private System.Windows.Forms.Button SendMessageButton;
         private System.Windows.Forms.Button DeleteFileButton;
-        private System.Windows.Forms.ListBox FilesInfoListBox;
+        private System.Windows.Forms.ListBox FilesTempListBox;
         private System.Windows.Forms.Button AddFileButton;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button DownloadFileButton;
+        private System.Windows.Forms.ListBox FilesListBox;
     }
 }
 

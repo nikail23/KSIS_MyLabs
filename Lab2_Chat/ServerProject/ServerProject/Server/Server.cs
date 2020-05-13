@@ -50,9 +50,9 @@ namespace ServerProject
             {
                 try
                 {
-                    Socket connectedSocket = tcpSocket.Accept();
+                    var connectedSocket = tcpSocket.Accept();
                     receivedDataBuffer = new byte[1024];
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    using (var memoryStream = new MemoryStream())
                     {
                         do
                         {
@@ -73,8 +73,8 @@ namespace ServerProject
 
         public void ListenUdp()
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint endPoint = ipEndPoint;
+            var ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            var endPoint = (EndPoint)ipEndPoint;
             int receivedDataBytesCount;
             byte[] receivedDataBuffer;
             while (true)
@@ -82,7 +82,7 @@ namespace ServerProject
                 try
                 {
                     receivedDataBuffer = new byte[1024];
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    using (var memoryStream = new MemoryStream())
                     {
                         do
                         {
@@ -106,8 +106,8 @@ namespace ServerProject
             udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             udpSocket.EnableBroadcast = true;
             tcpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            IPEndPoint localUdpIp = new IPEndPoint(IPAddress.Any, ServerPort);
-            IPEndPoint localTcpIp = new IPEndPoint(CommonFunctions.GetCurrrentHostIp(), ServerPort);
+            var localUdpIp = new IPEndPoint(IPAddress.Any, ServerPort);
+            var localTcpIp = new IPEndPoint(CommonFunctions.GetCurrrentHostIp(), ServerPort);
             try
             {
                 udpSocket.Bind(localUdpIp);
@@ -143,7 +143,7 @@ namespace ServerProject
 
         public void SendMessageToAllClients(Message message)
         {
-            foreach (ClientHandler clientHandler in clients)
+            foreach (var clientHandler in clients)
             {
                 SendMessageToClient(message, clientHandler);
             }
@@ -156,15 +156,15 @@ namespace ServerProject
 
         private void HandleClientUdpRequestMessage(ClientUdpRequestMessage clientUdpRequestMessage)
         {
-            ServerUdpAnswerMessage serverUdpAnswerMessage = GetServerUdpAnswerMessage();
-            IPEndPoint clientEndPoint = new IPEndPoint(clientUdpRequestMessage.SenderIp, clientUdpRequestMessage.SenderPort);
-            Socket serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var serverUdpAnswerMessage = GetServerUdpAnswerMessage();
+            var clientEndPoint = new IPEndPoint(clientUdpRequestMessage.SenderIp, clientUdpRequestMessage.SenderPort);
+            var serverUdpAnswerSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             serverUdpAnswerSocket.SendTo(messageSerializer.Serialize(serverUdpAnswerMessage), clientEndPoint);
         }
 
         private ClientHandler GetClientHandler(RegistrationMessage registrationMessage, Socket connectedSocket)
         {
-            ClientHandler clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, GetClientUniqueId(), messageSerializer);
+            var clientHandler = new ClientHandler(registrationMessage.ClientName, connectedSocket, GetClientUniqueId(), messageSerializer);
             clientHandler.ReceiveMessageEvent += HandleReceivedMessage;
             clientHandler.ClientDisconnectedEvent += RemoveConnection;
             clients.Add(clientHandler);
@@ -174,7 +174,7 @@ namespace ServerProject
 
         private void HandleRegistrationMessage(RegistrationMessage registrationMessage, Socket connectedSocket)
         {
-            ClientHandler clientHandler = GetClientHandler(registrationMessage, connectedSocket);
+            var clientHandler = GetClientHandler(registrationMessage, connectedSocket);
             SendMessageToClient(GetSendIdMessage(clientHandler), clientHandler);
             SendMessageToAllClients(GetParticipantsListMessage());
             SendMessageToAllClients(GetMessagesHistoryMessage());
@@ -189,7 +189,7 @@ namespace ServerProject
 
         private void HandleIndividualChatMessage(IndividualChatMessage individualChatMessage)
         {
-            foreach (ClientHandler clientHandler in clients)
+            foreach (var clientHandler in clients)
             {
                 if (clientHandler.id == individualChatMessage.ReceiverId)
                 {
@@ -203,17 +203,17 @@ namespace ServerProject
         {
             if (message is ClientUdpRequestMessage)
             {
-                ClientUdpRequestMessage clientUdpRequestMessage = (ClientUdpRequestMessage)message;               
+                var clientUdpRequestMessage = (ClientUdpRequestMessage)message;               
                 HandleClientUdpRequestMessage(clientUdpRequestMessage);              
             }
             if (message is IndividualChatMessage)
             {
-                IndividualChatMessage individualChatMessage = (IndividualChatMessage)message;
+                var individualChatMessage = (IndividualChatMessage)message;
                 HandleIndividualChatMessage(individualChatMessage);
             }
             else if (message is CommonChatMessage)
             {
-                CommonChatMessage commonChatMessage = (CommonChatMessage)message;
+                var commonChatMessage = (CommonChatMessage)message;
                 WriteLine("\"" + GetName(commonChatMessage.SenderId) + "\": " + commonChatMessage.Content);  
                 HandleCommonChatMessage(commonChatMessage);            
             }
@@ -223,7 +223,7 @@ namespace ServerProject
         {
             if (message is RegistrationMessage)
             {
-                RegistrationMessage registrationMessage = (RegistrationMessage)message;
+                var registrationMessage = (RegistrationMessage)message;
                 WriteLine("\"" + registrationMessage.ClientName + "\" has join the server");
                 HandleRegistrationMessage(registrationMessage, connectedSocket);               
             }
@@ -231,7 +231,7 @@ namespace ServerProject
 
         private string GetName(int id)
         {
-            foreach (ClientHandler clientHandler in clients)
+            foreach (var clientHandler in clients)
             {
                 if (id == clientHandler.id)
                 {
@@ -253,33 +253,33 @@ namespace ServerProject
 
         private SendIdMessage GetSendIdMessage(ClientHandler clientHandler)
         {
-            IPEndPoint serverIp = (IPEndPoint)tcpSocket.LocalEndPoint;
+            var serverIp = (IPEndPoint)tcpSocket.LocalEndPoint;
             return new SendIdMessage(DateTime.Now, serverIp.Address, serverIp.Port, clientHandler.id);
         }
 
         private MessagesHistoryMessage GetMessagesHistoryMessage()
         {
-            IPEndPoint serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            var serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
             return new MessagesHistoryMessage(DateTime.Now, serverIp.Address, serverIp.Port, messageHistory);
         }
 
         private ParticipantsListMessage GetParticipantsListMessage()
         {
-            List<ChatParticipant> participantsList = new List<ChatParticipant>();
-            participantsList.Add(new ChatParticipant(CommonChatName, CommonChatId, new List<Message>()));
-            foreach (ClientHandler clientHandler in clients)
+            var participantsList = new List<ChatParticipant>();
+            participantsList.Add(new ChatParticipant(CommonChatName, CommonChatId, new List<Message>(), new Dictionary<int, string>()));
+            foreach (var clientHandler in clients)
             {
-                participantsList.Add(new ChatParticipant(clientHandler.name, clientHandler.id, new List<Message>()));
+                participantsList.Add(new ChatParticipant(clientHandler.name, clientHandler.id, new List<Message>(), new Dictionary<int, string>()));
             }
-            IPEndPoint serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
-            ParticipantsListMessage participantsListMessage = new ParticipantsListMessage(DateTime.Now, serverIp.Address, serverIp.Port, participantsList);
+            var serverIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
+            var participantsListMessage = new ParticipantsListMessage(DateTime.Now, serverIp.Address, serverIp.Port, participantsList);
             return participantsListMessage;
         }
 
         private int GetClientUniqueId()
         {
-            int clientsCount = 0;
-            foreach (ClientHandler clientHandler in clients)
+            var clientsCount = 0;
+            foreach (var clientHandler in clients)
             {
                 clientsCount++;
             }

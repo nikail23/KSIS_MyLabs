@@ -16,6 +16,7 @@ namespace CommonLibrary
         public string Name { get; }
         public int Id { get; }
         public List<Message> MessageHistory { get; set; }
+        public Dictionary<int, string> Files { get; set; }
         public string UnreadMessageString 
         {
             get
@@ -23,15 +24,18 @@ namespace CommonLibrary
                 return "You have " + UnreadMessagesCount + " new message(s)!";
             }
         }
+
         private int UnreadMessagesCount;
+
         public event UnreadMessageDelegate UnreadMessageEvent;
         public event ReadMessageDelegate ReadMessageEvent;
 
-        public ChatParticipant(string name, int id, List<Message> messageHistory)
+        public ChatParticipant(string name, int id, List<Message> messageHistory, Dictionary<int, string> files)
         {
             Name = name;
             Id = id;
             MessageHistory = messageHistory;
+            Files = files;
             UnreadMessagesCount = 0;
         }
 

@@ -13,20 +13,35 @@ namespace FileSharingLibrary
 
     public class FileSharingClient
     {
-        private Dictionary<int, string> files;
-        private List<int> filesIdToSendList;
+        /*
+         * реализовать проверку размера и расширения файла!
+         * 
+         */
+        public Dictionary<int, string> filesToSendDictionary { get; private set; }
+        public Dictionary<int, string> avaibleFilesDictionary { get; private set; }
 
-        public event UpdateFilesListDelegate UpdateFilesListEvent;
+        public event UpdateFilesListDelegate UpdateFilesToLoadListEvent;
+        public event UpdateFilesListDelegate UpdateFilesAvaibleListEvent;
 
         public FileSharingClient()
         {
-            files = new Dictionary<int, string>();
-            filesIdToSendList = new List<int>();
+            filesToSendDictionary = new Dictionary<int, string>();
+            avaibleFilesDictionary = new Dictionary<int, string>();
         }
 
-        public void ActivateShowFilesEvent()
+        public void ActivateShowFilesToLoadListEvent()
         {
-            UpdateFilesListEvent(files);
+            UpdateFilesToLoadListEvent(filesToSendDictionary);
+        }
+
+        public void ActivateShowAvaibleFilesListEvent() 
+        {
+            /* 
+               в таком виде оно тут не надо,
+               присобачить сюда добавление к списку доступных
+               и потом уже срабатывание евента 
+            */
+            UpdateFilesAvaibleListEvent(avaibleFilesDictionary);
         }
 
         public async Task DeleteFile(int fileId, string url)
@@ -39,8 +54,8 @@ namespace FileSharingLibrary
 
                 if (fileInfoResponse.IsSuccessStatusCode)
                 {
-                    files.Remove(fileId);
-                    ActivateShowFilesEvent();
+                    filesToSendDictionary.Remove(fileId);
+                    ActivateShowFilesToLoadListEvent();
                     MessageBox.Show("Файл с id = " + fileId + " успешно удален из хранилища!");
                 }
                 else
@@ -84,9 +99,8 @@ namespace FileSharingLibrary
                     if (fileId != -1)
                     {
                         var fileInfo = await GetFileInfo(fileId, url);
-                        files.Add(fileId, fileInfo.FileName + " " + fileInfo.FileSize);
-                        ActivateShowFilesEvent();
-                        // TODO: также добавлять во временный список Id для отправки 
+                        filesToSendDictionary.Add(fileId, fileInfo.FileName + " " + fileInfo.FileSize);
+                        ActivateShowFilesToLoadListEvent();
                     }
                     else
                     {
@@ -153,7 +167,7 @@ namespace FileSharingLibrary
 
         public int GetFileIdByInfo(string fileInfo)
         {
-            foreach (KeyValuePair<int, string> file in files)
+            foreach (KeyValuePair<int, string> file in filesToSendDictionary)
             {
                 if (fileInfo == file.Value)
                 {

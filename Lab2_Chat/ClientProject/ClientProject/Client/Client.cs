@@ -3,12 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace ClientProject
 {
@@ -111,13 +108,21 @@ namespace ClientProject
         {
             if (commonChatMessage is IndividualChatMessage)
             {
-                IndividualChatMessage individualChatMessage = (IndividualChatMessage)commonChatMessage;
-                foreach (ChatParticipant chatParticipant in participants)
+                var individualChatMessage = (IndividualChatMessage)commonChatMessage;
+                foreach (var chatParticipant in participants)
                 {
                     if (chatParticipant.Id == individualChatMessage.SenderId)
                     {
                         chatParticipant.MessageHistory.Add(individualChatMessage);
                         chatParticipant.UnreadMessagesCountIncrement(individualChatMessage);
+                        if (individualChatMessage is FileIndividualMessage)
+                        {
+                            var fileIndividualMessage = (FileIndividualMessage)individualChatMessage;
+                            foreach (var file in fileIndividualMessage.Files)
+                            {
+                                chatParticipant.Files.Add(file.Key, file.Value);
+                            }
+                        }
                         break;
                     }
                 }
@@ -125,6 +130,14 @@ namespace ClientProject
             else
             {
                 participants[0].UnreadMessagesCountIncrement(commonChatMessage);
+                if (commonChatMessage is FileCommonMessage)
+                {
+                    var fileCommonMessage = (FileCommonMessage)commonChatMessage;
+                    foreach (var file in fileCommonMessage.Files)
+                    {
+                        participants[0].Files.Add(file.Key, file.Value);
+                    }
+                }
             }      
         }
 
@@ -164,7 +177,7 @@ namespace ClientProject
                 while (true)
                 {
                     receivedDataBuffer = new byte[1024];
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    using (var memoryStream = new MemoryStream())
                     {
                         do
                         {
@@ -185,8 +198,8 @@ namespace ClientProject
 
         public void ListenUdp()
         {
-            IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
-            EndPoint endPoint = ipEndPoint;
+            var ipEndPoint = new IPEndPoint(IPAddress.Any, 0);
+            var endPoint = (EndPoint)ipEndPoint;
             int receivedDataBytesCount;
             byte[] receivedDataBuffer;
             while (true)
@@ -194,7 +207,7 @@ namespace ClientProject
                 try
                 {
                     receivedDataBuffer = new byte[1024];
-                    using (MemoryStream memoryStream = new MemoryStream())
+                    using (var memoryStream = new MemoryStream())
                     {
                         do
                         {
@@ -215,10 +228,10 @@ namespace ClientProject
 
         public void SearchServers()
         {
-            IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Broadcast, ServerPort);
-            IPEndPoint localIp = new IPEndPoint(IPAddress.Any, 0);
+            var broadcastEndPoint = new IPEndPoint(IPAddress.Broadcast, ServerPort);
+            var localIp = new IPEndPoint(IPAddress.Any, 0);
             udpSocket.Bind(localIp);
-            Socket sendUdpRequest = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            var sendUdpRequest = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
             sendUdpRequest.EnableBroadcast = true;
             sendUdpRequest.SendTo(messageSerializer.Serialize(GetClientUdpRequestMessage()), broadcastEndPoint);
             listenUdpThread.Start();
@@ -232,7 +245,7 @@ namespace ClientProject
             }
             else
             {
-                IndividualChatMessage individualChatMessage = GetIndividualChatMessage(content, participants[selectedDialog].Id);
+                var individualChatMessage = GetIndividualChatMessage(content, participants[selectedDialog].Id);
                 if (individualChatMessage.SenderId != individualChatMessage.ReceiverId)
                 {
                     tcpSocket.Send(messageSerializer.Serialize(individualChatMessage));
@@ -242,15 +255,15 @@ namespace ClientProject
             }
         }
 
-        public void SendFileMessage(string content, int selectedDialog, List<string> filesList)
+        public void SendFileMessage(string content, int selectedDialog, Dictionary<int, string> filesToLoad)
         {
             if (participants[selectedDialog].Id == 0)
             {
-                tcpSocket.Send(messageSerializer.Serialize(GetFileCommonMessage(content, filesList)));
+                tcpSocket.Send(messageSerializer.Serialize(GetFileCommonMessage(content, filesToLoad)));
             }
             else
             {
-                FileIndividualMessage fileIndividualMessage = GetFileIndividualMessage(content, participants[selectedDialog].Id, filesList);
+                var fileIndividualMessage = GetFileIndividualMessage(content, participants[selectedDialog].Id, filesToLoad);
                 if (fileIndividualMessage.SenderId != fileIndividualMessage.ReceiverId)
                 {
                     tcpSocket.Send(messageSerializer.Serialize(fileIndividualMessage));
@@ -279,7 +292,7 @@ namespace ClientProject
             return new IndividualChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, receiverId);
         }
 
-        private FileIndividualMessage GetFileIndividualMessage(string content, int receiverId, List<string> files)
+        private FileIndividualMessage GetFileIndividualMessage(string content, int receiverId, Dictionary<int, string> files)
         {
             IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
             return new FileIndividualMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, receiverId, files);
@@ -291,10 +304,10 @@ namespace ClientProject
             return new CommonChatMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id);
         }
 
-        private FileCommonMessage GetFileCommonMessage(string content, List<string> files)
+        private FileCommonMessage GetFileCommonMessage(string content, Dictionary<int, string> filesToLoad)
         {
             IPEndPoint clientIp = (IPEndPoint)(tcpSocket.LocalEndPoint);
-            return new FileCommonMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, files);
+            return new FileCommonMessage(DateTime.Now, clientIp.Address, clientIp.Port, content, id, filesToLoad);
         }
 
         private ClientUdpRequestMessage GetClientUdpRequestMessage()

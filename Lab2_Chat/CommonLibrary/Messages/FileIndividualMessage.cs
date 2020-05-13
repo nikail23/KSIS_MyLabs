@@ -10,11 +10,11 @@ namespace CommonLibrary
     [Serializable]
     public class FileIndividualMessage : IndividualChatMessage
     {
-        public List<string> FileNames { get; }
+        public Dictionary<int, string> Files { get; }
 
-        public FileIndividualMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, int senderId, int receiverId, List<string> fileNames) : base(dateTime, senderIp, senderPort, content, senderId, receiverId)
+        public FileIndividualMessage(DateTime dateTime, IPAddress senderIp, int senderPort, string content, int senderId, int receiverId, Dictionary<int, string> files) : base(dateTime, senderIp, senderPort, content, senderId, receiverId)
         {
-            FileNames = fileNames;
+            Files = files;
         }
     }
 }

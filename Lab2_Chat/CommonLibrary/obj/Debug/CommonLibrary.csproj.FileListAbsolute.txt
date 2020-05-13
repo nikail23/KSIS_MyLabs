@@ -2,3 +2,4 @@ C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\CommonLibrary\bin\Debug\CommonLibrar
 C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\CommonLibrary\bin\Debug\CommonLibrary.pdb
 C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\CommonLibrary\obj\Debug\CommonLibrary.dll
 C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\CommonLibrary\obj\Debug\CommonLibrary.pdb
+C:\Users\asus\Desktop\KSIS_MyLabs\Lab2_Chat\CommonLibrary\obj\Debug\CommonLibrary.csprojAssemblyReference.cache
