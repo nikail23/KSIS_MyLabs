@@ -320,6 +320,7 @@ namespace ClientProject
             else
             {
                 client.SendFileMessage(MessageTextBox.Text, selectedDialog, fileSharingClient.filesToSendDictionary);
+                fileSharingClient.totalFilesToLoadSize = 0;
                 FilesToLoadListBox.Items.Clear();
             }
             MessageTextBox.Clear();

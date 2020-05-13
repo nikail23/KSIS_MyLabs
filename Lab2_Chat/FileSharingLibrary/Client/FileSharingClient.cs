@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -13,20 +14,27 @@ namespace FileSharingLibrary
 
     public class FileSharingClient
     {
-        /*
-         * реализовать проверку размера и расширения файла!
-         * 
-         */
+        private const int MegaByte = 1024 * 1024;
+        private const int MaxFileSize = 3 * MegaByte;
+        private const int MaxTotalFilesSize = 10 * MegaByte;
+        private static readonly string[] AllowExtensions = new string[]
+        {
+            ".txt", ".png", ".jpeg", ".docx", ".pdf", ".zip", ".rar"
+        };
+
         public Dictionary<int, string> filesToSendDictionary { get; private set; }
         public Dictionary<int, string> avaibleFilesDictionary { get; private set; }
 
         public event UpdateFilesListDelegate UpdateFilesToLoadListEvent;
         public event UpdateFilesListDelegate UpdateFilesAvaibleListEvent;
 
+        public int totalFilesToLoadSize;
+
         public FileSharingClient()
         {
             filesToSendDictionary = new Dictionary<int, string>();
             avaibleFilesDictionary = new Dictionary<int, string>();
+            totalFilesToLoadSize = 0;
         }
 
         public void ActivateShowFilesToLoadListEvent()
@@ -85,33 +93,86 @@ namespace FileSharingLibrary
             }
         }
 
-        public async Task SendFile(string filePath, string url)
+        private bool CheckFileExtension(string fileExtension)
         {
-            using (var client = new HttpClient())
+            foreach (var allowExtension in AllowExtensions)
             {
-                var fileLoadRequest = GetPostRequestMessage(filePath, url);
-
-                var fileLoadResponse = await client.SendAsync(fileLoadRequest);
-                
-                if (fileLoadResponse.IsSuccessStatusCode)
+                if (allowExtension == fileExtension)
                 {
-                    var fileId = GetFileIdByResponse(fileLoadResponse);
-                    if (fileId != -1)
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool CheckFile(string filePath)
+        { 
+            var fileExtension = Path.GetExtension(filePath);
+
+            if (CheckFileExtension(fileExtension))
+            {
+                var fileSize = (int)(new System.IO.FileInfo(filePath).Length);
+                if (fileSize < MaxFileSize)
+                {
+                    totalFilesToLoadSize += fileSize;
+                    if (totalFilesToLoadSize < MaxTotalFilesSize)
                     {
-                        var fileInfo = await GetFileInfo(fileId, url);
-                        filesToSendDictionary.Add(fileId, fileInfo.FileName + " " + fileInfo.FileSize);
-                        ActivateShowFilesToLoadListEvent();
+                        return true;
                     }
                     else
                     {
-                        MessageBox.Show("Не найден заголовок FileId в ответе!", "Error");
+                        MessageBox.Show("Превышен суммарный размер загруженных файлов: " + GetMegabytesFromBytes(totalFilesToLoadSize) + " MB больше " + GetMegabytesFromBytes(MaxTotalFilesSize) + " MB.");
+                        return false;
                     }
                 }
                 else
                 {
-                    ShowError(fileLoadResponse);
+                    MessageBox.Show("Неверное размер файла: " + GetMegabytesFromBytes(fileSize) + " MB больше " + GetMegabytesFromBytes(MaxFileSize) + " MB.");
+                    return false;
                 }
             }
+            else
+            {
+                MessageBox.Show("Неверное расширение: " + fileExtension + ".");
+                return false;
+            }    
+        }
+
+        private string GetMegabytesFromBytes(int bytes)
+        {
+            return ( Math.Round( (double)bytes / MegaByte ) ).ToString("#.##");
+        }
+
+        public async Task SendFile(string filePath, string url)
+        {
+            if (CheckFile(filePath))
+            {
+                using (var client = new HttpClient())
+                {
+                    var fileLoadRequest = GetPostRequestMessage(filePath, url);
+
+                    var fileLoadResponse = await client.SendAsync(fileLoadRequest);
+
+                    if (fileLoadResponse.IsSuccessStatusCode)
+                    {
+                        var fileId = GetFileIdByResponse(fileLoadResponse);
+                        if (fileId != -1)
+                        {
+                            var fileInfo = await GetFileInfo(fileId, url);
+                            filesToSendDictionary.Add(fileId, fileInfo.FileName + " " + GetMegabytesFromBytes(fileInfo.FileSize) + " MB.");
+                            ActivateShowFilesToLoadListEvent();
+                        }
+                        else
+                        {
+                            MessageBox.Show("Не найден заголовок FileId в ответе!", "Error");
+                        }
+                    }
+                    else
+                    {
+                        ShowError(fileLoadResponse);
+                    }
+                }
+            }       
         }
 
         public async Task<DownloadFile> DownloadFile(int fileId, string url)
