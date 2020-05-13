@@ -3,7 +3,9 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace FileSharingLibrary
 {
@@ -11,7 +13,7 @@ namespace FileSharingLibrary
 
     public class FileSharingClient
     {
-        public Dictionary<int, string> files;
+        private Dictionary<int, string> files;
         private List<int> filesIdToSendList;
 
         public event UpdateFilesListDelegate UpdateFilesListEvent;
@@ -22,7 +24,12 @@ namespace FileSharingLibrary
             filesIdToSendList = new List<int>();
         }
 
-        public async Task<string> GetFileInfo(int fileId, string url)
+        public void ActivateShowFilesEvent()
+        {
+            UpdateFilesListEvent(files);
+        }
+
+        public async Task<FileInfo> GetFileInfo(int fileId, string url)
         {
             using (var client = new HttpClient())
             {
@@ -34,59 +41,81 @@ namespace FileSharingLibrary
                 {
                     return GetFileInfoStringByResponse(fileInfoResponse);
                 }
+                else
+                {
+                    ShowError(fileInfoResponse);
+                    return null;
+                }
             }
-            return null;
-        }
-
-        public void ActivateShowFilesEvent()
-        {
-            UpdateFilesListEvent(files);
-        }
-
-        private MultipartFormDataContent GetFileLoadRequestMultipartData(string filePath)
-        {
-            var formData = new MultipartFormDataContent();
-            var fileBytesContent = GetFyleBytesContentByFilePath(filePath);
-            formData.Add(fileBytesContent);
-            return formData;
         }
 
         public async Task SendFile(string filePath, string url)
         {
             using (var client = new HttpClient())
             {
-                var fileName = Path.GetFileName(filePath); 
-                // TODO: по REST нужно имя файла убрать в Multipart и обращаться только по url
-                var fileLoadRequest = new HttpRequestMessage(HttpMethod.Post, url + fileName);
-                fileLoadRequest.Content = GetFileLoadRequestMultipartData(filePath);
+                var fileLoadRequest = GetPostRequestMessage(filePath, url);
 
                 var fileLoadResponse = await client.SendAsync(fileLoadRequest);
-
+                
                 if (fileLoadResponse.IsSuccessStatusCode)
                 {
                     var fileId = GetFileIdByResponse(fileLoadResponse);
                     if (fileId != -1)
                     {
                         var fileInfo = await GetFileInfo(fileId, url);
-                        files.Add(fileId, fileInfo);     
+                        files.Add(fileId, fileInfo.FileName + " " + fileInfo.FileSize);     
                         // TODO: также добавлять во временный список Id для отправки 
                     }
+                    else
+                    {
+                        MessageBox.Show("Не найден заголовок FileId в ответе!", "Error");
+                    }
+                }
+                else
+                {
+                    ShowError(fileLoadResponse);
                 }
             }
             ActivateShowFilesEvent();
         }
 
-        public async Task<Stream> DownloadFile(int fileId, string url)
+        public async Task<DownloadFile> DownloadFile(int fileId, string url)
         {
             using (var client = new HttpClient())
             {
-                var response = await client.GetAsync(url + fileId);
+                var downloadRequest = new HttpRequestMessage(HttpMethod.Get, url + fileId);
+                
+                var downloadResponse = await client.SendAsync(downloadRequest);
 
-                if (response.IsSuccessStatusCode)
+                if (downloadResponse.IsSuccessStatusCode)
                 {
-                    var downloadFileStream = await response.Content.ReadAsStreamAsync();
-                    return downloadFileStream;
+                    var downloadFile = await GetDownloadFileByResponse(downloadResponse);
+                    return downloadFile;
                 }
+                else
+                {
+                    ShowError(downloadResponse);
+                    return null;
+                }
+            }
+        }
+
+        private void ShowError(HttpResponseMessage response)
+        {
+            MessageBox.Show("Код: " + response.StatusCode + " - " + response.ReasonPhrase + ".", "Error");
+        }
+
+        private async Task<DownloadFile> GetDownloadFileByResponse(HttpResponseMessage response)
+        {
+            var downloadFileStream = await response.Content.ReadAsStreamAsync();
+            var downloadFileBytes = new byte[downloadFileStream.Length];
+            downloadFileStream.Read(downloadFileBytes, 0, downloadFileBytes.Length);
+
+            IEnumerable<string> fileNameValues;
+
+            if (response.Headers.TryGetValues("FileName", out fileNameValues))
+            {
+                return new DownloadFile(fileNameValues.First(), downloadFileBytes);
             }
             return null;
         }
@@ -101,6 +130,18 @@ namespace FileSharingLibrary
             }
         }
 
+        public int GetFileIdByInfo(string fileInfo)
+        {
+            foreach (KeyValuePair<int, string> file in files)
+            {
+                if (fileInfo == file.Value)
+                {
+                    return file.Key;
+                }
+            }
+            return -1;
+        }
+
         private int GetFileIdByResponse(HttpResponseMessage response)
         {
             HttpHeaders responseHeaders = response.Headers;
@@ -112,16 +153,34 @@ namespace FileSharingLibrary
             return -1;
         }
 
-        private string GetFileInfoStringByResponse(HttpResponseMessage response)
+        private FileInfo GetFileInfoStringByResponse(HttpResponseMessage response)
         {
             HttpHeaders responseHeaders = response.Headers;
             IEnumerable<string> fileNameValues;
             IEnumerable<string> fileSizeValues;
             if (responseHeaders.TryGetValues("FileName", out fileNameValues) && responseHeaders.TryGetValues("FileSize", out fileSizeValues))
             {
-                return "Name: " + fileNameValues.First() + " Size: " + fileSizeValues.First();
+                return new FileInfo(fileNameValues.First(), int.Parse(fileSizeValues.First()));
             }
             return null;
         }
+
+        private MultipartFormDataContent GetFileLoadRequestMultipartData(string filePath)
+        {
+            var formData = new MultipartFormDataContent();
+            var fileBytesContent = GetFyleBytesContentByFilePath(filePath);
+            formData.Add(fileBytesContent);
+            return formData;
+        }
+
+        private HttpRequestMessage GetPostRequestMessage(string filePath, string url)
+        {
+            var fileLoadRequest = new HttpRequestMessage(HttpMethod.Post, url);
+            var fileName = Path.GetFileName(filePath);
+            fileLoadRequest.Headers.Add("FileName", fileName);
+            fileLoadRequest.Content = GetFileLoadRequestMultipartData(filePath);
+            return fileLoadRequest;
+        }
+
     }
 }

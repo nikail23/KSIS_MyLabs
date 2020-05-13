@@ -2,6 +2,7 @@
 using FileSharingLibrary;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Windows.Forms;
 using Message = CommonLibrary.Message;
 
@@ -271,6 +272,7 @@ namespace ClientProject
             AddFileButton.Enabled = true;
             DeleteFileButton.Enabled = true;
             ShowFilesButton.Enabled = true;
+            DownloadFileButton.Enabled = true;
         }
 
         private void ConnectButton_Click(object sender, EventArgs e)
@@ -346,9 +348,51 @@ namespace ClientProject
 
         private async void ShowFilesButton_Click(object sender, EventArgs e)
         {
+            /*try
+            {
+                //fileSharingClient.
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Исключение: " + ex.Message);
+            }*/
+        }
+
+        private async void DownloadFileButton_Click(object sender, EventArgs e)
+        {
             try
             {
-                fileSharingClient.UpdateFilesListEvent();
+                var selectedFileIndex = FilesInfoListBox.SelectedIndex;
+                if (selectedFileIndex > -1 && selectedFileIndex < FilesInfoListBox.Items.Count)
+                {
+                    var fileInfo = FilesInfoListBox.Items[selectedFileIndex].ToString();
+                    var fileId = fileSharingClient.GetFileIdByInfo(fileInfo);
+                    if (fileId != -1)
+                    {
+                        var downloadFile = await fileSharingClient.DownloadFile(fileId, FileSharingServerUrl);
+                        if (downloadFile != null)
+                        {
+                            var saveFileDialog = new SaveFileDialog();
+                            saveFileDialog.FileName = downloadFile.FileName;
+                            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                            {
+                                var filePath = saveFileDialog.FileName;
+                                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                                {
+                                    fileStream.Write(downloadFile.FileBytes, 0, downloadFile.FileBytes.Length);
+                                }
+                            }
+                        }
+                        else
+                        {
+
+                        }                
+                    }
+                    else
+                    {
+                        MessageBox.Show("Id файла с таким названием не найдено!", "Error!");
+                    }
+                }
             }
             catch (Exception ex)
             {

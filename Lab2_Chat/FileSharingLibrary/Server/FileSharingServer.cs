@@ -35,7 +35,7 @@ namespace FileSharingLibrary
                 isListen = true;
                 while (isListen)
                 {
-                    HttpListenerContext context = httpListener.GetContext();
+                    var context = httpListener.GetContext();
                     var task = Task.Run(() => HandleContext(ref context));
                 }
             }
@@ -47,8 +47,8 @@ namespace FileSharingLibrary
 
         private void HandleContext(ref HttpListenerContext context)
         {
-            HttpListenerRequest request = context.Request;
-            HttpListenerResponse response = context.Response;
+            var request = context.Request;
+            var response = context.Response;
 
             if (request.HttpMethod == "GET")
             {
@@ -82,8 +82,7 @@ namespace FileSharingLibrary
             else
             {
                 response.StatusCode = 404;
-                response.StatusDescription = "File not found!";
-                
+                response.StatusDescription = "File with such id not found!";
             }
 
             response.OutputStream.Close();
@@ -92,8 +91,12 @@ namespace FileSharingLibrary
         private void HandleDownloadFileRequest(HttpListenerRequest request, ref HttpListenerResponse response)
         {
             var fileId = int.Parse(request.Url.LocalPath.Substring(1));
-            if (fileStorageManager.IsExistedFileCheck(fileId))
+            var fileName = fileStorageManager.GetFileNameById(fileId);
+
+            if (fileStorageManager.IsExistedFileCheck(fileId) && fileName != null)
             {
+                response.AddHeader("FileName", fileName);
+
                 var downloadFileBytes = fileStorageManager.GetDownloadFileBytes(fileId);
                 using (var outputStream = response.OutputStream)
                 {
@@ -106,7 +109,7 @@ namespace FileSharingLibrary
             else
             {
                 response.StatusCode = 404;
-                response.StatusDescription = "File not found!";
+                response.StatusDescription = "File with such id not found!";
             }
 
             response.OutputStream.Close();
@@ -121,10 +124,10 @@ namespace FileSharingLibrary
 
         private void HandleFileLoadToServerRequest(HttpListenerRequest request, ref HttpListenerResponse response)
         {
-
-            var fileName = request.Url.LocalPath.Substring(1);
+            var fileName = request.Headers.Get("FileName");
             var fileBytes = GetFileBytesByRequest(request);
             var fileId = 0;
+
             if (fileStorageManager.AddNewFile(fileName, fileBytes, ref fileId))
             {
                 response.StatusCode = 200;
@@ -148,6 +151,7 @@ namespace FileSharingLibrary
                 httpListener.Stop();
                 httpListener = null;
             }
+            threadListen.Abort();
         }
     }
 }

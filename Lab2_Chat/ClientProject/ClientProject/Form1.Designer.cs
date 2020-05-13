@@ -44,7 +44,7 @@
             this.AddFileButton = new System.Windows.Forms.Button();
             this.ShowFilesButton = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.DownloadFileButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ServersListBox
@@ -203,23 +203,24 @@
             this.label4.TabIndex = 15;
             this.label4.Text = "Files:";
             // 
-            // button1
+            // DownloadFileButton
             // 
-            this.button1.Enabled = false;
-            this.button1.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.button1.Location = new System.Drawing.Point(197, 198);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(128, 24);
-            this.button1.TabIndex = 16;
-            this.button1.Text = "Download file";
-            this.button1.UseVisualStyleBackColor = true;
+            this.DownloadFileButton.Enabled = false;
+            this.DownloadFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.DownloadFileButton.Location = new System.Drawing.Point(197, 198);
+            this.DownloadFileButton.Name = "DownloadFileButton";
+            this.DownloadFileButton.Size = new System.Drawing.Size(128, 24);
+            this.DownloadFileButton.TabIndex = 16;
+            this.DownloadFileButton.Text = "Download file";
+            this.DownloadFileButton.UseVisualStyleBackColor = true;
+            this.DownloadFileButton.Click += new System.EventHandler(this.DownloadFileButton_Click);
             // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 298);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.DownloadFileButton);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.ShowFilesButton);
             this.Controls.Add(this.AddFileButton);
@@ -262,7 +263,7 @@
         private System.Windows.Forms.Button AddFileButton;
         private System.Windows.Forms.Button ShowFilesButton;
         private System.Windows.Forms.Label label4;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button DownloadFileButton;
     }
 }
 

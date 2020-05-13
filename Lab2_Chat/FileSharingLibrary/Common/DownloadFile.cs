@@ -5,15 +5,12 @@ using System.Xml.Serialization;
 
 namespace FileSharingLibrary
 {
-    [Serializable]
-    public class FileRecord
+    public class DownloadFile
     {
-        public string FileName { get; set; }
-        public byte[] FileBytes { get; set; }
+        public string FileName { get; }
+        public byte[] FileBytes { get; }
 
-        public FileRecord() { }
-
-        public FileRecord(string fileName, byte[] fileBytes)
+        public DownloadFile(string fileName, byte[] fileBytes)
         {
             FileName = fileName;
             FileBytes = fileBytes;

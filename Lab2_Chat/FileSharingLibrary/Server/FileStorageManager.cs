@@ -14,7 +14,7 @@ namespace FileSharingLibrary
         public FileStorageManager()
         {
             filesList = new Dictionary<int, string>();
-            CheckFileStorageCondition();
+            CheckStorageFolderCondition();
         }
 
         public bool GetFileInfo(int fileId, ref string fileName, ref int fileSize)
@@ -99,19 +99,19 @@ namespace FileSharingLibrary
             return false;
         }
 
-        private string GetFileNameById(int id)
+        public string GetFileNameById(int fileId)
         {
-            foreach (KeyValuePair<int, string> dictionaryFileName in filesList)
+            foreach (KeyValuePair<int, string> file in filesList)
             {
-                if (id == dictionaryFileName.Key)
+                if (fileId == file.Key)
                 {
-                    return dictionaryFileName.Value;
+                    return file.Value;
                 }
             }
             return null;
         }
 
-        public byte[] GetDownloadFileBytes(int fileId) /* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ПРОВЕРИТЬ И ИСПРАВИТЬ */
+        public byte[] GetDownloadFileBytes(int fileId) 
         {
             string filePath = FileStoragePath + GetFileNameById(fileId);
             if (IsExistedFileCheck(fileId))
@@ -126,23 +126,19 @@ namespace FileSharingLibrary
             return null;
         }
 
-        private void CheckFileStorageCondition()
+        private void CheckStorageFolderCondition()
         {
-            int Id = StartFileId;
-
-            filesList.Clear();
-
             if (!(Directory.Exists(FileStoragePath)))
             {
                 Directory.CreateDirectory(FileStoragePath);
             }
-
-            var filesPathList = Directory.GetFiles(FileStoragePath);
-            
-            foreach (string fileName in filesPathList)
+            else
             {
-                filesList.Add(Id, Path.GetFileName(fileName));
-                Id++;
+                var fileStorageDirectory = new DirectoryInfo(FileStoragePath);
+                foreach (var file in fileStorageDirectory.GetFiles())
+                {
+                    file.Delete();
+                }
             }
         }
     }
