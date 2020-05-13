@@ -40,11 +40,11 @@
             this.MessageTextBox = new System.Windows.Forms.TextBox();
             this.SendMessageButton = new System.Windows.Forms.Button();
             this.DeleteFileButton = new System.Windows.Forms.Button();
-            this.FilesTempListBox = new System.Windows.Forms.ListBox();
+            this.FilesToLoadListBox = new System.Windows.Forms.ListBox();
             this.AddFileButton = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.DownloadFileButton = new System.Windows.Forms.Button();
-            this.FilesListBox = new System.Windows.Forms.ListBox();
+            this.AvaibleFilesListBox = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // ServersListBox
@@ -164,15 +164,15 @@
             // 
             // FilesTempListBox
             // 
-            this.FilesTempListBox.AllowDrop = true;
-            this.FilesTempListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.FilesTempListBox.FormattingEnabled = true;
-            this.FilesTempListBox.ItemHeight = 15;
-            this.FilesTempListBox.Location = new System.Drawing.Point(354, 222);
-            this.FilesTempListBox.Name = "FilesTempListBox";
-            this.FilesTempListBox.ScrollAlwaysVisible = true;
-            this.FilesTempListBox.Size = new System.Drawing.Size(128, 19);
-            this.FilesTempListBox.TabIndex = 12;
+            this.FilesToLoadListBox.AllowDrop = true;
+            this.FilesToLoadListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.FilesToLoadListBox.FormattingEnabled = true;
+            this.FilesToLoadListBox.ItemHeight = 15;
+            this.FilesToLoadListBox.Location = new System.Drawing.Point(354, 222);
+            this.FilesToLoadListBox.Name = "FilesTempListBox";
+            this.FilesToLoadListBox.ScrollAlwaysVisible = true;
+            this.FilesToLoadListBox.Size = new System.Drawing.Size(128, 19);
+            this.FilesToLoadListBox.TabIndex = 12;
             // 
             // AddFileButton
             // 
@@ -210,22 +210,22 @@
             // 
             // FilesListBox
             // 
-            this.FilesListBox.FormattingEnabled = true;
-            this.FilesListBox.Location = new System.Drawing.Point(206, 48);
-            this.FilesListBox.Name = "FilesListBox";
-            this.FilesListBox.Size = new System.Drawing.Size(128, 212);
-            this.FilesListBox.TabIndex = 17;
+            this.AvaibleFilesListBox.FormattingEnabled = true;
+            this.AvaibleFilesListBox.Location = new System.Drawing.Point(206, 48);
+            this.AvaibleFilesListBox.Name = "FilesListBox";
+            this.AvaibleFilesListBox.Size = new System.Drawing.Size(128, 212);
+            this.AvaibleFilesListBox.TabIndex = 17;
             // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(640, 298);
-            this.Controls.Add(this.FilesListBox);
+            this.Controls.Add(this.AvaibleFilesListBox);
             this.Controls.Add(this.DownloadFileButton);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.AddFileButton);
-            this.Controls.Add(this.FilesTempListBox);
+            this.Controls.Add(this.FilesToLoadListBox);
             this.Controls.Add(this.DeleteFileButton);
             this.Controls.Add(this.SendMessageButton);
             this.Controls.Add(this.MessageTextBox);
@@ -260,11 +260,11 @@
         private System.Windows.Forms.TextBox MessageTextBox;
         private System.Windows.Forms.Button SendMessageButton;
         private System.Windows.Forms.Button DeleteFileButton;
-        private System.Windows.Forms.ListBox FilesTempListBox;
+        private System.Windows.Forms.ListBox FilesToLoadListBox;
         private System.Windows.Forms.Button AddFileButton;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button DownloadFileButton;
-        private System.Windows.Forms.ListBox FilesListBox;
+        private System.Windows.Forms.ListBox AvaibleFilesListBox;
     }
 }
 

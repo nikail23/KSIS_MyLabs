@@ -28,7 +28,8 @@ namespace ClientProject
             client.ReceiveMessageEvent += ShowReceivedMessage;
             client.UnreadMessageEvent += UnreadMessageHandler;
             client.ReadMessageEvent += ReadMessageHandler;
-            fileSharingClient.UpdateFilesToLoadListEvent += UpdateFileList;
+            fileSharingClient.UpdateFilesToLoadListEvent += UpdateFilesToLoadList;
+            fileSharingClient.UpdateFilesAvaibleListEvent += UpdateAvaibleFilesList;
             client.SearchServers();
         }
 
@@ -59,12 +60,21 @@ namespace ClientProject
             }
         }
 
-        private void UpdateFileList(Dictionary<int, string> files)
+        private void UpdateFilesToLoadList(Dictionary<int, string> files)
         {
-            FilesTempListBox.Items.Clear();
+            FilesToLoadListBox.Items.Clear();
             foreach (var file in files)
             {
-                FilesTempListBox.Items.Add(file.Value);
+                FilesToLoadListBox.Items.Add(file.Value);
+            }
+        }
+
+        private void UpdateAvaibleFilesList(Dictionary<int, string> files)
+        {
+            AvaibleFilesListBox.Items.Clear();
+            foreach (var file in files)
+            {
+                AvaibleFilesListBox.Items.Add(file.Value);
             }
         }
 
@@ -120,6 +130,11 @@ namespace ClientProject
                 {
                     var chatContent = "[" + commonChatMessage.DateTime.ToString() + " " + commonChatMessage.SenderIp.ToString() + ":" + commonChatMessage.SenderPort + "]: \"" + client.participants[commonChatMessage.SenderId].Name + "\": " + commonChatMessage.Content + "\r\n";
                     ChatTextBox.Text += chatContent;
+                    if (commonChatMessage is FileCommonMessage)
+                    {
+                        var fileCommonMessage = (FileCommonMessage)commonChatMessage;
+                        fileSharingClient.AddAvaibleFilesAndActivateEvent(fileCommonMessage.Files);
+                    }
                 }
             };
             if (InvokeRequired)
@@ -201,6 +216,11 @@ namespace ClientProject
                 {
                     var chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.participants[individualChatMessage.SenderId].Name + "\": " + individualChatMessage.Content + "\r\n";
                     ChatTextBox.Text += chatContent;
+                    if (individualChatMessage is FileIndividualMessage)
+                    {
+                        var fileIndividualMessage = (FileIndividualMessage)individualChatMessage;
+                        fileSharingClient.AddAvaibleFilesAndActivateEvent(fileIndividualMessage.Files);
+                    }
                 }
             };
             if (InvokeRequired)
@@ -221,6 +241,11 @@ namespace ClientProject
                 {
                     var chatContent = "[" + individualChatMessage.DateTime.ToString() + " " + individualChatMessage.SenderIp.ToString() + ":" + individualChatMessage.SenderPort + "]: \"" + client.participants[individualChatMessage.SenderId].Name + "\": " + individualChatMessage.Content + "\r\n";
                     ChatTextBox.Text += chatContent;
+                    if (individualChatMessage is FileIndividualMessage)
+                    {
+                        var fileIndividualMessage = (FileIndividualMessage)individualChatMessage;
+                        fileSharingClient.AddAvaibleFilesAndActivateEvent(fileIndividualMessage.Files);
+                    }
                 }
             };
             if (InvokeRequired)
@@ -235,13 +260,6 @@ namespace ClientProject
 
         public void ShowReceivedMessage(Message message)
         {
-            /*
-             * 
-             * 
-             * отобразить тут событие для обработки сообщений с файлами
-             * 
-             * 
-             */
             if (message is ServerUdpAnswerMessage)
             {
                 AddServerInfoToServersListBox((ServerUdpAnswerMessage)message);
@@ -295,13 +313,14 @@ namespace ClientProject
 
         private void SendMessageButton_Click(object sender, EventArgs e)
         {
-            if (FilesTempListBox.Items.Count == 0)
+            if (FilesToLoadListBox.Items.Count == 0)
             {
                 client.SendMessage(MessageTextBox.Text, selectedDialog);
             }
             else
             {
                 client.SendFileMessage(MessageTextBox.Text, selectedDialog, fileSharingClient.filesToSendDictionary);
+                FilesToLoadListBox.Items.Clear();
             }
             MessageTextBox.Clear();
         }
@@ -321,8 +340,9 @@ namespace ClientProject
                 chatParticipant.SetUnreadMessageCountZero();
             }
             currentChatLabel.Text = client.participants[selectedDialog].Name;
-            var newMessages = client.participants[selectedDialog].MessageHistory;
-            RefreshChatTextBox(newMessages);
+            AvaibleFilesListBox.Items.Clear();
+            var messages = client.participants[selectedDialog].MessageHistory;
+            RefreshChatTextBox(messages);
         }
 
         private void ParticipantsListBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -336,30 +356,31 @@ namespace ClientProject
 
         private async void AddFileButton_Click(object sender, EventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            try
             {
-                var filePath = openFileDialog.FileName;
-                try
+                var openFileDialog = new OpenFileDialog();
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
+                    var filePath = openFileDialog.FileName;
                     await fileSharingClient.SendFile(filePath, FileSharingServerUrl);
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Исключение: " + ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Исключение: " + ex.Message);
             }
         }
+
 
         private async void DownloadFileButton_Click(object sender, EventArgs e)
         {
             try
             {
-                var selectedFileIndex = FilesTempListBox.SelectedIndex;
-                if (selectedFileIndex > -1 && selectedFileIndex < FilesTempListBox.Items.Count)
+                var selectedFileIndex = AvaibleFilesListBox.SelectedIndex;
+                if (selectedFileIndex > -1 && selectedFileIndex < AvaibleFilesListBox.Items.Count)
                 {
-                    var fileInfo = FilesTempListBox.Items[selectedFileIndex].ToString();
-                    var fileId = fileSharingClient.GetFileIdByInfo(fileInfo);
+                    var fileInfo = AvaibleFilesListBox.Items[selectedFileIndex].ToString();
+                    var fileId = fileSharingClient.GetFileIdByInfoInAvaibleFilesList(fileInfo);
                     if (fileId != -1)
                     {
                         var downloadFile = await fileSharingClient.DownloadFile(fileId, FileSharingServerUrl);
@@ -375,7 +396,7 @@ namespace ClientProject
                                     fileStream.Write(downloadFile.FileBytes, 0, downloadFile.FileBytes.Length);
                                 }
                             }
-                        }             
+                        }
                     }
                     else
                     {
@@ -393,11 +414,11 @@ namespace ClientProject
         {
             try
             {
-                var selectedFileIndex = FilesTempListBox.SelectedIndex;
-                if (selectedFileIndex > -1 && selectedFileIndex < FilesTempListBox.Items.Count)
+                var selectedFileIndex = FilesToLoadListBox.SelectedIndex;
+                if (selectedFileIndex > -1 && selectedFileIndex < FilesToLoadListBox.Items.Count)
                 {
-                    var fileInfo = FilesTempListBox.Items[selectedFileIndex].ToString();
-                    var fileId = fileSharingClient.GetFileIdByInfo(fileInfo);
+                    var fileInfo = FilesToLoadListBox.Items[selectedFileIndex].ToString();
+                    var fileId = fileSharingClient.GetFileIdByInfoInFilesToLoadList(fileInfo);
                     if (fileId != -1)
                     {
                         await fileSharingClient.DeleteFile(fileId, FileSharingServerUrl);
@@ -415,3 +436,5 @@ namespace ClientProject
         }
     }
 }
+
+

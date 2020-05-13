@@ -34,13 +34,13 @@ namespace FileSharingLibrary
             UpdateFilesToLoadListEvent(filesToSendDictionary);
         }
 
-        public void ActivateShowAvaibleFilesListEvent() 
+        public void AddAvaibleFilesAndActivateEvent(Dictionary<int, string> files) 
         {
-            /* 
-               в таком виде оно тут не надо,
-               присобачить сюда добавление к списку доступных
-               и потом уже срабатывание евента 
-            */
+            avaibleFilesDictionary.Clear();
+            foreach (var file in files)
+            {
+                avaibleFilesDictionary.Add(file.Key, file.Value);
+            }
             UpdateFilesAvaibleListEvent(avaibleFilesDictionary);
         }
 
@@ -165,7 +165,19 @@ namespace FileSharingLibrary
             }
         }
 
-        public int GetFileIdByInfo(string fileInfo)
+        public int GetFileIdByInfoInAvaibleFilesList(string fileInfo)
+        {
+            foreach (KeyValuePair<int, string> file in avaibleFilesDictionary)
+            {
+                if (fileInfo == file.Value)
+                {
+                    return file.Key;
+                }
+            }
+            return -1;
+        }
+
+        public int GetFileIdByInfoInFilesToLoadList(string fileInfo)
         {
             foreach (KeyValuePair<int, string> file in filesToSendDictionary)
             {
