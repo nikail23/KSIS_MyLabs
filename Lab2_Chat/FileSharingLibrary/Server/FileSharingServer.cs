@@ -64,6 +64,29 @@ namespace FileSharingLibrary
             {
                 HandleFileInfoRequest(request, ref response);
             }
+
+            if (request.HttpMethod == "DELETE")
+            {
+                HandleDeleteFileRequest(request, ref response);
+            }
+        }
+
+        private void HandleDeleteFileRequest(HttpListenerRequest request, ref HttpListenerResponse response)
+        {
+            var fileId = int.Parse(request.Url.LocalPath.Substring(1));
+
+            if (fileStorageManager.DeleteFile(fileId))
+            {
+                response.StatusCode = 200;
+                response.StatusDescription = "OK";
+            }
+            else
+            {
+                response.StatusCode = 403;
+                response.StatusDescription = "File with such id not found!";
+            }
+
+            response.OutputStream.Close();
         }
 
         private void HandleFileInfoRequest(HttpListenerRequest request, ref HttpListenerResponse response)

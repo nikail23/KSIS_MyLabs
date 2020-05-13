@@ -17,6 +17,20 @@ namespace FileSharingLibrary
             CheckStorageFolderCondition();
         }
 
+        public bool DeleteFile(int fileId)
+        {
+            if (IsExistedFileCheck(fileId))
+            {
+                var filePath = FileStoragePath + GetFileNameById(fileId);
+                File.Delete(filePath);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         public bool GetFileInfo(int fileId, ref string fileName, ref int fileSize)
         {
             if (IsExistedFileCheck(fileId))

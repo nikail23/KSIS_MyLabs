@@ -29,6 +29,27 @@ namespace FileSharingLibrary
             UpdateFilesListEvent(files);
         }
 
+        public async Task DeleteFile(int fileId, string url)
+        {
+            using (var client = new HttpClient())
+            {
+                var fileInfoRequest = new HttpRequestMessage(HttpMethod.Delete, url + fileId);
+
+                var fileInfoResponse = await client.SendAsync(fileInfoRequest);
+
+                if (fileInfoResponse.IsSuccessStatusCode)
+                {
+                    files.Remove(fileId);
+                    ActivateShowFilesEvent();
+                    MessageBox.Show("Файл с id = " + fileId + " успешно удален из хранилища!");
+                }
+                else
+                {
+                    ShowError(fileInfoResponse);
+                }
+            }
+        }
+
         public async Task<FileInfo> GetFileInfo(int fileId, string url)
         {
             using (var client = new HttpClient())
@@ -63,7 +84,8 @@ namespace FileSharingLibrary
                     if (fileId != -1)
                     {
                         var fileInfo = await GetFileInfo(fileId, url);
-                        files.Add(fileId, fileInfo.FileName + " " + fileInfo.FileSize);     
+                        files.Add(fileId, fileInfo.FileName + " " + fileInfo.FileSize);
+                        ActivateShowFilesEvent();
                         // TODO: также добавлять во временный список Id для отправки 
                     }
                     else
@@ -76,7 +98,6 @@ namespace FileSharingLibrary
                     ShowError(fileLoadResponse);
                 }
             }
-            ActivateShowFilesEvent();
         }
 
         public async Task<DownloadFile> DownloadFile(int fileId, string url)

@@ -271,7 +271,6 @@ namespace ClientProject
             SendMessageButton.Enabled = true;
             AddFileButton.Enabled = true;
             DeleteFileButton.Enabled = true;
-            ShowFilesButton.Enabled = true;
             DownloadFileButton.Enabled = true;
         }
 
@@ -346,18 +345,6 @@ namespace ClientProject
             }
         }
 
-        private async void ShowFilesButton_Click(object sender, EventArgs e)
-        {
-            /*try
-            {
-                //fileSharingClient.
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Исключение: " + ex.Message);
-            }*/
-        }
-
         private async void DownloadFileButton_Click(object sender, EventArgs e)
         {
             try
@@ -382,11 +369,32 @@ namespace ClientProject
                                     fileStream.Write(downloadFile.FileBytes, 0, downloadFile.FileBytes.Length);
                                 }
                             }
-                        }
-                        else
-                        {
+                        }             
+                    }
+                    else
+                    {
+                        MessageBox.Show("Id файла с таким названием не найдено!", "Error!");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Исключение: " + ex.Message);
+            }
+        }
 
-                        }                
+        private async void DeleteFileButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var selectedFileIndex = FilesInfoListBox.SelectedIndex;
+                if (selectedFileIndex > -1 && selectedFileIndex < FilesInfoListBox.Items.Count)
+                {
+                    var fileInfo = FilesInfoListBox.Items[selectedFileIndex].ToString();
+                    var fileId = fileSharingClient.GetFileIdByInfo(fileInfo);
+                    if (fileId != -1)
+                    {
+                        await fileSharingClient.DeleteFile(fileId, FileSharingServerUrl);
                     }
                     else
                     {
