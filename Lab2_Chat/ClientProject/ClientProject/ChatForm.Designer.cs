@@ -33,7 +33,6 @@
             this.ConnectButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.currentChatLabel = new System.Windows.Forms.Label();
-            this.ChatTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.ParticipantsListBox = new System.Windows.Forms.ListBox();
             this.label3 = new System.Windows.Forms.Label();
@@ -45,6 +44,7 @@
             this.label4 = new System.Windows.Forms.Label();
             this.DownloadFileButton = new System.Windows.Forms.Button();
             this.AvaibleFilesListBox = new System.Windows.Forms.ListBox();
+            this.ChatListBox = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // ServersListBox
@@ -79,7 +79,7 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Dominican", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(348, 9);
+            this.label1.Location = new System.Drawing.Point(467, 10);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(124, 35);
             this.label1.TabIndex = 3;
@@ -89,18 +89,10 @@
             // 
             this.currentChatLabel.AutoSize = true;
             this.currentChatLabel.Font = new System.Drawing.Font("Dominican", 20.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.currentChatLabel.Location = new System.Drawing.Point(455, 9);
+            this.currentChatLabel.Location = new System.Drawing.Point(595, 14);
             this.currentChatLabel.Name = "currentChatLabel";
             this.currentChatLabel.Size = new System.Drawing.Size(0, 35);
             this.currentChatLabel.TabIndex = 4;
-            // 
-            // ChatTextBox
-            // 
-            this.ChatTextBox.Location = new System.Drawing.Point(354, 47);
-            this.ChatTextBox.Multiline = true;
-            this.ChatTextBox.Name = "ChatTextBox";
-            this.ChatTextBox.Size = new System.Drawing.Size(274, 179);
-            this.ChatTextBox.TabIndex = 5;
             // 
             // label2
             // 
@@ -133,18 +125,18 @@
             // 
             // MessageTextBox
             // 
-            this.MessageTextBox.Location = new System.Drawing.Point(482, 222);
+            this.MessageTextBox.Location = new System.Drawing.Point(554, 220);
             this.MessageTextBox.Name = "MessageTextBox";
-            this.MessageTextBox.Size = new System.Drawing.Size(146, 20);
+            this.MessageTextBox.Size = new System.Drawing.Size(253, 20);
             this.MessageTextBox.TabIndex = 9;
             // 
             // SendMessageButton
             // 
             this.SendMessageButton.Enabled = false;
             this.SendMessageButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SendMessageButton.Location = new System.Drawing.Point(483, 241);
+            this.SendMessageButton.Location = new System.Drawing.Point(554, 241);
             this.SendMessageButton.Name = "SendMessageButton";
-            this.SendMessageButton.Size = new System.Drawing.Size(146, 32);
+            this.SendMessageButton.Size = new System.Drawing.Size(253, 32);
             this.SendMessageButton.TabIndex = 10;
             this.SendMessageButton.Text = "Send";
             this.SendMessageButton.UseVisualStyleBackColor = true;
@@ -154,33 +146,33 @@
             // 
             this.DeleteFileButton.Enabled = false;
             this.DeleteFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DeleteFileButton.Location = new System.Drawing.Point(354, 263);
+            this.DeleteFileButton.Location = new System.Drawing.Point(386, 262);
             this.DeleteFileButton.Name = "DeleteFileButton";
-            this.DeleteFileButton.Size = new System.Drawing.Size(128, 24);
+            this.DeleteFileButton.Size = new System.Drawing.Size(162, 24);
             this.DeleteFileButton.TabIndex = 11;
             this.DeleteFileButton.Text = "Delete file";
             this.DeleteFileButton.UseVisualStyleBackColor = true;
             this.DeleteFileButton.Click += new System.EventHandler(this.DeleteFileButton_Click);
             // 
-            // FilesTempListBox
+            // FilesToLoadListBox
             // 
             this.FilesToLoadListBox.AllowDrop = true;
             this.FilesToLoadListBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.FilesToLoadListBox.FormattingEnabled = true;
             this.FilesToLoadListBox.ItemHeight = 15;
-            this.FilesToLoadListBox.Location = new System.Drawing.Point(354, 222);
-            this.FilesToLoadListBox.Name = "FilesTempListBox";
+            this.FilesToLoadListBox.Location = new System.Drawing.Point(386, 220);
+            this.FilesToLoadListBox.Name = "FilesToLoadListBox";
             this.FilesToLoadListBox.ScrollAlwaysVisible = true;
-            this.FilesToLoadListBox.Size = new System.Drawing.Size(128, 19);
+            this.FilesToLoadListBox.Size = new System.Drawing.Size(162, 19);
             this.FilesToLoadListBox.TabIndex = 12;
             // 
             // AddFileButton
             // 
             this.AddFileButton.Enabled = false;
             this.AddFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.AddFileButton.Location = new System.Drawing.Point(354, 241);
+            this.AddFileButton.Location = new System.Drawing.Point(386, 241);
             this.AddFileButton.Name = "AddFileButton";
-            this.AddFileButton.Size = new System.Drawing.Size(128, 24);
+            this.AddFileButton.Size = new System.Drawing.Size(162, 24);
             this.AddFileButton.TabIndex = 13;
             this.AddFileButton.Text = "Add file";
             this.AddFileButton.UseVisualStyleBackColor = true;
@@ -190,37 +182,47 @@
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Dominican", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(202, 17);
+            this.label4.Location = new System.Drawing.Point(198, 17);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(41, 24);
+            this.label4.Size = new System.Drawing.Size(92, 24);
             this.label4.TabIndex = 15;
-            this.label4.Text = "Files:";
+            this.label4.Text = "Message Files:";
             // 
             // DownloadFileButton
             // 
             this.DownloadFileButton.Enabled = false;
             this.DownloadFileButton.Font = new System.Drawing.Font("Dominican", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.DownloadFileButton.Location = new System.Drawing.Point(206, 262);
+            this.DownloadFileButton.Location = new System.Drawing.Point(202, 262);
             this.DownloadFileButton.Name = "DownloadFileButton";
-            this.DownloadFileButton.Size = new System.Drawing.Size(128, 24);
+            this.DownloadFileButton.Size = new System.Drawing.Size(160, 24);
             this.DownloadFileButton.TabIndex = 16;
             this.DownloadFileButton.Text = "Download file";
             this.DownloadFileButton.UseVisualStyleBackColor = true;
             this.DownloadFileButton.Click += new System.EventHandler(this.DownloadFileButton_Click);
             // 
-            // FilesListBox
+            // AvaibleFilesListBox
             // 
             this.AvaibleFilesListBox.FormattingEnabled = true;
-            this.AvaibleFilesListBox.Location = new System.Drawing.Point(206, 48);
-            this.AvaibleFilesListBox.Name = "FilesListBox";
-            this.AvaibleFilesListBox.Size = new System.Drawing.Size(128, 212);
+            this.AvaibleFilesListBox.Location = new System.Drawing.Point(202, 48);
+            this.AvaibleFilesListBox.Name = "AvaibleFilesListBox";
+            this.AvaibleFilesListBox.Size = new System.Drawing.Size(160, 212);
             this.AvaibleFilesListBox.TabIndex = 17;
+            // 
+            // ChatListBox
+            // 
+            this.ChatListBox.FormattingEnabled = true;
+            this.ChatListBox.Location = new System.Drawing.Point(386, 48);
+            this.ChatListBox.Name = "ChatListBox";
+            this.ChatListBox.Size = new System.Drawing.Size(421, 173);
+            this.ChatListBox.TabIndex = 18;
+            this.ChatListBox.SelectedIndexChanged += new System.EventHandler(this.ChatListBox_SelectedIndexChanged);
             // 
             // mainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(640, 298);
+            this.ClientSize = new System.Drawing.Size(821, 309);
+            this.Controls.Add(this.ChatListBox);
             this.Controls.Add(this.AvaibleFilesListBox);
             this.Controls.Add(this.DownloadFileButton);
             this.Controls.Add(this.label4);
@@ -232,7 +234,6 @@
             this.Controls.Add(this.label3);
             this.Controls.Add(this.ParticipantsListBox);
             this.Controls.Add(this.label2);
-            this.Controls.Add(this.ChatTextBox);
             this.Controls.Add(this.currentChatLabel);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.ConnectButton);
@@ -253,7 +254,6 @@
         private System.Windows.Forms.Button ConnectButton;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label currentChatLabel;
-        private System.Windows.Forms.TextBox ChatTextBox;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ListBox ParticipantsListBox;
         private System.Windows.Forms.Label label3;
@@ -265,6 +265,7 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button DownloadFileButton;
         private System.Windows.Forms.ListBox AvaibleFilesListBox;
+        private System.Windows.Forms.ListBox ChatListBox;
     }
 }
 

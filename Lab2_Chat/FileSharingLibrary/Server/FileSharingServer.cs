@@ -82,7 +82,7 @@ namespace FileSharingLibrary
             }
             else
             {
-                response.StatusCode = 403;
+                response.StatusCode = 404;
                 response.StatusDescription = "File with such id not found!";
             }
 
@@ -159,7 +159,7 @@ namespace FileSharingLibrary
             }
             else
             {
-                response.StatusCode = 403;
+                response.StatusCode = 409;
                 response.StatusDescription = "File already exists on the server!";
             }
 

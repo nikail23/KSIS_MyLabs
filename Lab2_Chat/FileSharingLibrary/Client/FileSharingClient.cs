@@ -12,6 +12,12 @@ namespace FileSharingLibrary
 {
     public delegate void UpdateFilesListDelegate(Dictionary<int, string> filesNameList);
 
+    /*
+     * сделать возможным переименование файла при неудачном запросе на загрузку
+     * также привязать файлы к сообщению
+     * 
+     */
+
     public class FileSharingClient
     {
         private const int MegaByte = 1024 * 1024;
@@ -23,33 +29,20 @@ namespace FileSharingLibrary
         };
 
         public Dictionary<int, string> filesToSendDictionary { get; private set; }
-        public Dictionary<int, string> avaibleFilesDictionary { get; private set; }
 
         public event UpdateFilesListDelegate UpdateFilesToLoadListEvent;
-        public event UpdateFilesListDelegate UpdateFilesAvaibleListEvent;
 
         public int totalFilesToLoadSize;
 
         public FileSharingClient()
         {
             filesToSendDictionary = new Dictionary<int, string>();
-            avaibleFilesDictionary = new Dictionary<int, string>();
             totalFilesToLoadSize = 0;
         }
 
         public void ActivateShowFilesToLoadListEvent()
         {
             UpdateFilesToLoadListEvent(filesToSendDictionary);
-        }
-
-        public void AddAvaibleFilesAndActivateEvent(Dictionary<int, string> files) 
-        {
-            avaibleFilesDictionary.Clear();
-            foreach (var file in files)
-            {
-                avaibleFilesDictionary.Add(file.Key, file.Value);
-            }
-            UpdateFilesAvaibleListEvent(avaibleFilesDictionary);
         }
 
         public async Task DeleteFile(int fileId, string url)
@@ -140,7 +133,7 @@ namespace FileSharingLibrary
 
         private string GetMegabytesFromBytes(int bytes)
         {
-            return ( Math.Round( (double)bytes / MegaByte ) ).ToString("#.##");
+            return string.Format("{0:F2}", ((double)bytes / MegaByte));
         }
 
         public async Task SendFile(string filePath, string url)
@@ -198,7 +191,7 @@ namespace FileSharingLibrary
 
         private void ShowError(HttpResponseMessage response)
         {
-            MessageBox.Show("Код: " + response.StatusCode + " - " + response.ReasonPhrase + ".", "Error");
+            MessageBox.Show("Ошибка: " + response.StatusCode + " - " + response.ReasonPhrase + ".", "HTTP Error");
         }
 
         private async Task<DownloadFile> GetDownloadFileByResponse(HttpResponseMessage response)
@@ -220,27 +213,15 @@ namespace FileSharingLibrary
         {
             using (var fileStream = File.OpenRead(filePath))
             {
-                byte[] fileBytes = new byte[fileStream.Length];
+                var fileBytes = new byte[fileStream.Length];
                 fileStream.Read(fileBytes, 0, fileBytes.Length);
                 return new ByteArrayContent(fileBytes);
             }
         }
 
-        public int GetFileIdByInfoInAvaibleFilesList(string fileInfo)
-        {
-            foreach (KeyValuePair<int, string> file in avaibleFilesDictionary)
-            {
-                if (fileInfo == file.Value)
-                {
-                    return file.Key;
-                }
-            }
-            return -1;
-        }
-
         public int GetFileIdByInfoInFilesToLoadList(string fileInfo)
         {
-            foreach (KeyValuePair<int, string> file in filesToSendDictionary)
+            foreach (var file in filesToSendDictionary)
             {
                 if (fileInfo == file.Value)
                 {
@@ -252,7 +233,7 @@ namespace FileSharingLibrary
 
         private int GetFileIdByResponse(HttpResponseMessage response)
         {
-            HttpHeaders responseHeaders = response.Headers;
+            var responseHeaders = response.Headers;
             IEnumerable<string> fileIdValues;
             if (responseHeaders.TryGetValues("FileId", out fileIdValues))
             {
@@ -263,7 +244,7 @@ namespace FileSharingLibrary
 
         private FileInfo GetFileInfoStringByResponse(HttpResponseMessage response)
         {
-            HttpHeaders responseHeaders = response.Headers;
+            var responseHeaders = response.Headers;
             IEnumerable<string> fileNameValues;
             IEnumerable<string> fileSizeValues;
             if (responseHeaders.TryGetValues("FileName", out fileNameValues) && responseHeaders.TryGetValues("FileSize", out fileSizeValues))
