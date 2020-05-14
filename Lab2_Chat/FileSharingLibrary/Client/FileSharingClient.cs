@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -20,6 +18,7 @@ namespace FileSharingLibrary
 
     public class FileSharingClient
     {
+        private const int UniqueFileNameStringSize = 5;
         private const int MegaByte = 1024 * 1024;
         private const int MaxFileSize = 3 * MegaByte;
         private const int MaxTotalFilesSize = 10 * MegaByte;
@@ -99,7 +98,7 @@ namespace FileSharingLibrary
         }
 
         private bool CheckFile(string filePath)
-        { 
+        {
             var fileExtension = Path.GetExtension(filePath);
 
             if (CheckFileExtension(fileExtension))
@@ -128,7 +127,7 @@ namespace FileSharingLibrary
             {
                 MessageBox.Show("Неверное расширение: " + fileExtension + ".");
                 return false;
-            }    
+            }
         }
 
         private string GetMegabytesFromBytes(int bytes)
@@ -165,7 +164,7 @@ namespace FileSharingLibrary
                         ShowError(fileLoadResponse);
                     }
                 }
-            }       
+            }
         }
 
         public async Task<DownloadFile> DownloadFile(int fileId, string url)
@@ -173,7 +172,7 @@ namespace FileSharingLibrary
             using (var client = new HttpClient())
             {
                 var downloadRequest = new HttpRequestMessage(HttpMethod.Get, url + fileId);
-                
+
                 var downloadResponse = await client.SendAsync(downloadRequest);
 
                 if (downloadResponse.IsSuccessStatusCode)
@@ -204,7 +203,7 @@ namespace FileSharingLibrary
 
             if (response.Headers.TryGetValues("FileName", out fileNameValues))
             {
-                return new DownloadFile(fileNameValues.First(), downloadFileBytes);
+                return new DownloadFile(fileNameValues.First().Substring(UniqueFileNameStringSize), downloadFileBytes);
             }
             return null;
         }
@@ -249,7 +248,7 @@ namespace FileSharingLibrary
             IEnumerable<string> fileSizeValues;
             if (responseHeaders.TryGetValues("FileName", out fileNameValues) && responseHeaders.TryGetValues("FileSize", out fileSizeValues))
             {
-                return new FileInfo(fileNameValues.First(), int.Parse(fileSizeValues.First()));
+                return new FileInfo(fileNameValues.First().Substring(UniqueFileNameStringSize), int.Parse(fileSizeValues.First()));
             }
             return null;
         }
@@ -262,10 +261,20 @@ namespace FileSharingLibrary
             return formData;
         }
 
+        private string GetFileNameUniqueString(string fileName)
+        {
+            var seconds = DateTime.Now.Second;
+            var random = new Random();
+            var randomValue = random.Next(100000, 99999999);
+            var result = (randomValue + seconds).ToString();
+            return result.Substring(result.Length - 5);
+        }
+
         private HttpRequestMessage GetPostRequestMessage(string filePath, string url)
         {
             var fileLoadRequest = new HttpRequestMessage(HttpMethod.Post, url);
             var fileName = Path.GetFileName(filePath);
+            fileName = GetFileNameUniqueString(fileName) + fileName;
             fileLoadRequest.Headers.Add("FileName", fileName);
             fileLoadRequest.Content = GetFileLoadRequestMultipartData(filePath);
             return fileLoadRequest;

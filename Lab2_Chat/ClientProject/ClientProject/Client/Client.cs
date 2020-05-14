@@ -255,15 +255,27 @@ namespace ClientProject
             }
         }
 
+        private Dictionary<int, string> GetCopyOfLoadedFilesDictionary(Dictionary<int, string> filesToLoad)
+        {
+            Dictionary<int, string> files = new Dictionary<int, string>();
+            foreach (var file in filesToLoad)
+            {
+                files.Add(file.Key, file.Value);
+            }
+            return files;
+        }
+
         public void SendFileMessage(string content, int selectedDialog, Dictionary<int, string> filesToLoad)
         {
+            var files = GetCopyOfLoadedFilesDictionary(filesToLoad);
+
             if (participants[selectedDialog].Id == 0)
             {
-                tcpSocket.Send(messageSerializer.Serialize(GetFileCommonMessage(content, filesToLoad)));
+                tcpSocket.Send(messageSerializer.Serialize(GetFileCommonMessage(content, files)));
             }
             else
             {
-                var fileIndividualMessage = GetFileIndividualMessage(content, participants[selectedDialog].Id, filesToLoad);
+                var fileIndividualMessage = GetFileIndividualMessage(content, participants[selectedDialog].Id, files);
                 if (fileIndividualMessage.SenderId != fileIndividualMessage.ReceiverId)
                 {
                     tcpSocket.Send(messageSerializer.Serialize(fileIndividualMessage));

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -48,7 +49,7 @@ namespace FileSharingLibrary
 
         public bool IsExistedFileCheck(string fileName)
         {
-            foreach (KeyValuePair<int, string> dictionaryFileName in filesList)
+            foreach (var dictionaryFileName in filesList)
             {
                 if (fileName == dictionaryFileName.Value)
                 {
@@ -60,7 +61,7 @@ namespace FileSharingLibrary
 
         public bool IsExistedFileCheck(int fileId)
         {
-            foreach (KeyValuePair<int, string> dictionaryFileName in filesList)
+            foreach (var dictionaryFileName in filesList)
             {
                 if (fileId == dictionaryFileName.Key)
                 {
@@ -102,7 +103,7 @@ namespace FileSharingLibrary
         {
             if (!(IsExistedFileCheck(fileName)))
             {
-                string filePath = FileStoragePath + fileName;
+                var filePath = FileStoragePath + fileName;
                 if (WriteFileToFileStorage(fileBytes, filePath))
                 {
                     id = GetNewFileId();
@@ -115,7 +116,7 @@ namespace FileSharingLibrary
 
         public string GetFileNameById(int fileId)
         {
-            foreach (KeyValuePair<int, string> file in filesList)
+            foreach (var file in filesList)
             {
                 if (fileId == file.Key)
                 {
@@ -127,10 +128,10 @@ namespace FileSharingLibrary
 
         public byte[] GetDownloadFileBytes(int fileId) 
         {
-            string filePath = FileStoragePath + GetFileNameById(fileId);
+            var filePath = FileStoragePath + GetFileNameById(fileId);
             if (IsExistedFileCheck(fileId))
             {
-                using (FileStream fstream = File.OpenRead(filePath))
+                using (var fstream = File.OpenRead(filePath))
                 {
                     byte[] fileBytes = new byte[fstream.Length];
                     fstream.Read(fileBytes, 0, fileBytes.Length);
